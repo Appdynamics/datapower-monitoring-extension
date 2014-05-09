@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+    <env:Body>
+        <dp:response xmlns:dp="http://www.datapower.com/schemas/management">
+            <dp:timestamp>2014-05-08T13:44:08-04:00</dp:timestamp>
+            <dp:status>
+                <HTTPTransactions xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                    <proxy>helloworld_xmlfw</proxy>
+                    <tenSeconds>1</tenSeconds>
+                    <oneMinute>3</oneMinute>
+                    <tenMinutes>0</tenMinutes>
+                    <oneHour>2</oneHour>
+                    <oneDay>1</oneDay>
+                </HTTPTransactions>
+                <HTTPTransactions xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                    <proxy>userws_proxy</proxy>
+                    <tenSeconds>1</tenSeconds>
+                    <oneMinute>7</oneMinute>
+                    <tenMinutes>0</tenMinutes>
+                    <oneHour>2</oneHour>
+                    <oneDay>1</oneDay>
+                </HTTPTransactions>
+                <HTTPTransactions xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                    <proxy>wsproxy</proxy>
+                    <tenSeconds>0</tenSeconds>
+                    <oneMinute>0</oneMinute>
+                    <tenMinutes>0</tenMinutes>
+                    <oneHour>0</oneHour>
+                    <oneDay>0</oneDay>
+                </HTTPTransactions>
+            </dp:status>
+        </dp:response>
+    </env:Body>
+</env:Envelope>

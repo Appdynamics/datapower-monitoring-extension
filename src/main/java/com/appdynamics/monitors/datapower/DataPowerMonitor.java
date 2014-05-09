@@ -1,15 +1,17 @@
 package com.appdynamics.monitors.datapower;
 
 import com.appdynamics.TaskInputArgs;
-import com.appdynamics.monitors.util.SoapMessageUtil;
-import com.appdynamics.extensions.xml.Xml;
 import com.appdynamics.extensions.ArgumentsValidator;
 import com.appdynamics.extensions.PathResolver;
 import com.appdynamics.extensions.StringUtils;
 import com.appdynamics.extensions.http.Response;
 import com.appdynamics.extensions.http.SimpleHttpClient;
 import com.appdynamics.extensions.http.WebTarget;
+import com.appdynamics.extensions.util.AggregatedValue;
+import com.appdynamics.extensions.util.AggregationType;
 import com.appdynamics.extensions.util.Aggregator;
+import com.appdynamics.extensions.xml.Xml;
+import com.appdynamics.monitors.util.SoapMessageUtil;
 import com.singularity.ee.agent.systemagent.SystemAgent;
 import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
 import com.singularity.ee.agent.systemagent.api.MetricWriter;
@@ -128,12 +130,23 @@ public class DataPowerMonitor extends AManagedMonitor {
         }
         if (!aggregator.isEmpty()) {
             for (Metric metric : metrics) {
-                BigDecimal value = aggregator.get(metric);
-                if (value != null) {
-                    String label = StringUtils.trim(metric.getAggregateLabel(), "|");
-                    String metricPath = statLabel + "|" + label;
-                    String valueStr = value.setScale(0, RoundingMode.HALF_UP).toString();
-                    printMetric(metricPath, valueStr, getMetricType(metric, stat));
+                AggregatedValue aggregate = aggregator.get(metric);
+                if (aggregate != null) {
+                    BigDecimal value = null;
+                    if (AggregationType.AVERAGE.equals(metric.getAggregationType())) {
+                        value = aggregate.getAverage();
+                    } else {
+                        value = aggregate.getSum();
+                    }
+                    if(value!=null){
+                        String label = StringUtils.trim(metric.getAggregateLabel(), "|");
+                        String metricPath = statLabel + "|" + label;
+                        if (metric.getMultiplier() != null) {
+                            value = value.multiply(metric.getMultiplier());
+                        }
+                        String valueStr = value.setScale(0, RoundingMode.HALF_UP).toString();
+                        printMetric(metricPath, valueStr, getMetricType(metric, stat));
+                    }
                 }
             }
         }

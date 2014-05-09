@@ -45,6 +45,18 @@ public class DataPowerMonitorTest {
         put("DP|System|Memory|Used (MB)", numberToString(717004D/1024D), "COLLECTIVE_OBSERVED_AVERAGE");
         put("DP|System|Memory|Free (MB)", numberToString(2651441D/1024D), "COLLECTIVE_OBSERVED_AVERAGE");
         put("DP|System|Memory|Requested (MB)", numberToString(722628D/1024D), "COLLECTIVE_OBSERVED_AVERAGE");
+
+        //HTTPMeanTransactionTime
+        put("DP|Transactions|helloworld_xmlfw|Average Response Time (ms)","8", "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|Transactions|userws_proxy|Average Response Time (ms)","15", "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|Transactions|wsproxy|Average Response Time (ms)","0", "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|Transactions|Average Response Time (ms)","8", "COLLECTIVE_OBSERVED_AVERAGE");
+        //HTTPTransactions
+        put("DP|Transactions|helloworld_xmlfw|Calls per Minute","180", "COLLECTIVE_OBSERVED_CURRENT");
+        put("DP|Transactions|userws_proxy|Calls per Minute","420", "COLLECTIVE_OBSERVED_CURRENT");
+        put("DP|Transactions|wsproxy|Calls per Minute","0", "COLLECTIVE_OBSERVED_CURRENT");
+        put("DP|Transactions|Calls per Minute","600", "COLLECTIVE_OBSERVED_CURRENT");
+
     }
 
     private String numberToString(Double val) {

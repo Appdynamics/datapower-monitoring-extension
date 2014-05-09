@@ -1,6 +1,8 @@
 package com.appdynamics.monitors.datapower;
 
 
+import com.appdynamics.extensions.util.AggregationType;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -39,6 +41,10 @@ public class Metric {
 
     @XmlAttribute(name = "aggregate-label")
     private String aggregateLabel;
+
+    @XmlAttribute(name = "aggregation-type")
+    private AggregationType aggregationType;
+
 
     public String getLabel() {
         return label;
@@ -102,6 +108,14 @@ public class Metric {
 
     public void setAggregateLabel(String aggregateLabel) {
         this.aggregateLabel = aggregateLabel;
+    }
+
+    public AggregationType getAggregationType() {
+        return aggregationType;
+    }
+
+    public void setAggregationType(AggregationType aggregationType) {
+        this.aggregationType = aggregationType;
     }
 
     @Override

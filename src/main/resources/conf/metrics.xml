@@ -39,7 +39,7 @@
     </stat>
     <stat name="HTTPMeanTransactionTime" label="Transactions">
         <metric label-xpath="proxy" value-xpath="oneMinute" label-suffix="|Average Response Time (ms)"
-                metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Average Transaction Time (ms)"/>
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Average Response Time (ms)" aggregation-type="AVERAGE"/>
     </stat>
     <stat name="HTTPTransactions" label="Transactions">
         <metric label-xpath="proxy" value-xpath="oneMinute" label-suffix="|Calls per Minute"  multiplier="60"
