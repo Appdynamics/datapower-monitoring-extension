@@ -3,9 +3,11 @@
 This extension works only with the standalone machine agent.
 
 ##Use Case
+The IBM® WebSphere® DataPower® SOA Appliance (hereafter called DataPower) is a purpose-built hardware platform designed to simplify, secure, and accelerate XML, Web services, and Enterprise Service Bus deployments.
 
 ## Perquisites
-The DataPower
+The DataPower XML Management Interface must be enabled. The DataPower Monitor uses the "/service/mgmt/current" SOAP endpoint to collect the metrics.
+Please refer to the IBM Redbook [WebSphere DataPower SOA Appliance: The XML Management Interface](http://www.redbooks.ibm.com/redpapers/pdfs/redp4446.pdf) Section 1.3, 1.4 and 1.5 to enable it. 
 
 ##Installation
 1. Build the project with maven.
@@ -27,13 +29,13 @@ mvn clean install
 | proxy-password | Optional | - | If the Proxy Server needs authentication |
 | metric-prefix | Optional | |  Custom Metrics&#124;DataPower |
 
-4. The metrics will be registered under 
-```
-Application Infrastructure Performance|Custom Metrics|DataPower|...
-```
 
-##Default Metrics
+###Default Metrics
 
+The metrics will be registered under 
+```
+Application Infrastructure Performance|Custom Metrics|DataPower|
+```
 The following metrics are collected OOTB. To customize the collected metrics, please refer to the section below.
 ```
 System|CPU Usage %
