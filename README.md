@@ -68,6 +68,8 @@ Transactions|Average Transaction Time (ms)
 
 The list of collected metrics can be customized by configuring the <MachineAgent>/monitors/DataPowerMonitor/metrics.xml. The following screenshots depicts the metric rules.
 
+This section explains how to extract the metric information from the soap response. The metrics.xml rules and the soap response from DataPower API is shown side-by-side
+
 ![](https://raw.githubusercontent.com/Appdynamics/datapower-monitoring-extension/master/wiki/images/datapower_conf_00.png?token=5995632__eyJzY29wZSI6IlJhd0Jsb2I6QXBwZHluYW1pY3MvZGF0YXBvd2VyLW1vbml0b3JpbmctZXh0ZW5zaW9uL21hc3Rlci93aWtpL2ltYWdlcy9kYXRhcG93ZXJfY29uZl8wMC5wbmciLCJleHBpcmVzIjoxNDAwNjk0NjMxfQ%3D%3D--04675c0498c1236238f40d4836f20568aea807ec)
 
 ![](https://raw.githubusercontent.com/Appdynamics/datapower-monitoring-extension/master/wiki/images/datapower_conf_01.png?token=5995632__eyJzY29wZSI6IlJhd0Jsb2I6QXBwZHluYW1pY3MvZGF0YXBvd2VyLW1vbml0b3JpbmctZXh0ZW5zaW9uL21hc3Rlci93aWtpL2ltYWdlcy9kYXRhcG93ZXJfY29uZl8wMS5wbmciLCJleHBpcmVzIjoxNDAwNjk0NzAwfQ%3D%3D--56b3b98b25474f43132639e1c3c3ef115e9e8b9e)
