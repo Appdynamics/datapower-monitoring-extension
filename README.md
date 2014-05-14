@@ -66,6 +66,17 @@ Transactions|Average Transaction Time (ms)
 
 ### Customize Metrics
 
+The list of collected metrics can be customized by configuring the <MachineAgent>/monitors/DataPowerMonitor/metrics.xml. The following screenshots depicts the metric rules.
+
+![](https://raw.githubusercontent.com/Appdynamics/datapower-monitoring-extension/master/wiki/images/datapower_conf_00.png?token=5995632__eyJzY29wZSI6IlJhd0Jsb2I6QXBwZHluYW1pY3MvZGF0YXBvd2VyLW1vbml0b3JpbmctZXh0ZW5zaW9uL21hc3Rlci93aWtpL2ltYWdlcy9kYXRhcG93ZXJfY29uZl8wMC5wbmciLCJleHBpcmVzIjoxNDAwNjk0NjMxfQ%3D%3D--04675c0498c1236238f40d4836f20568aea807ec)
+
+![](https://raw.githubusercontent.com/Appdynamics/datapower-monitoring-extension/master/wiki/images/datapower_conf_01.png?token=5995632__eyJzY29wZSI6IlJhd0Jsb2I6QXBwZHluYW1pY3MvZGF0YXBvd2VyLW1vbml0b3JpbmctZXh0ZW5zaW9uL21hc3Rlci93aWtpL2ltYWdlcy9kYXRhcG93ZXJfY29uZl8wMS5wbmciLCJleHBpcmVzIjoxNDAwNjk0NzAwfQ%3D%3D--56b3b98b25474f43132639e1c3c3ef115e9e8b9e)
+
+![](https://raw.githubusercontent.com/Appdynamics/datapower-monitoring-extension/master/wiki/images/datapower_conf_02.png?token=5995632__eyJzY29wZSI6IlJhd0Jsb2I6QXBwZHluYW1pY3MvZGF0YXBvd2VyLW1vbml0b3JpbmctZXh0ZW5zaW9uL21hc3Rlci93aWtpL2ltYWdlcy9kYXRhcG93ZXJfY29uZl8wMi5wbmciLCJleHBpcmVzIjoxNDAwNjk0NzI5fQ%3D%3D--b4474195f029021a9eb4cfd32ec5545b699d75a3)
+
+##Custom Dashboard
+![](https://raw.githubusercontent.com/Appdynamics/datapower-monitoring-extension/master/wiki/images/custom_dashboard.png?token=5995632__eyJzY29wZSI6IlJhd0Jsb2I6QXBwZHluYW1pY3MvZGF0YXBvd2VyLW1vbml0b3JpbmctZXh0ZW5zaW9uL21hc3Rlci93aWtpL2ltYWdlcy9jdXN0b21fZGFzaGJvYXJkLnBuZyIsImV4cGlyZXMiOjE0MDA2OTQ4NTR9--d7af0d55b8d526ffe2f58f6d9a09241b637d5fc1)
+
 ##Contributing
 
 Always feel free to fork and contribute any changes directly via [GitHub](https://github.com/Appdynamics/datapower-monitoring-extension).
