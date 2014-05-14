@@ -22,7 +22,7 @@
             <argument name="proxy-port" is-required="false" default-value=""/>
             <argument name="proxy-username" is-required="false" default-value=""/>
             <argument name="proxy-password" is-required="false" default-value=""/>
-            <argument name="metric-prefix" is-required="false" default-value="Custom Metrics|Data Power"/>
+            <argument name="metric-prefix" is-required="false" default-value="Custom Metrics|DataPower"/>
             -->
         </task-arguments>
         <java-task>

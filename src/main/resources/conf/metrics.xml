@@ -1,6 +1,6 @@
 <stats>
     <stat name="CPUUsage" label="System">
-        <metric value-xpath="oneMinute" label="CPU Usage %" metric-type="COLLECTIVE_OBSERVED_AVERAGE"/>
+        <metric value-xpath="tenSeconds" label="CPU Usage %" metric-type="COLLECTIVE_OBSERVED_AVERAGE"/>
     </stat>
     <stat name="SystemUsage" label="System" metric-type="COLLECTIVE_OBSERVED_CURRENT">
         <metric value-xpath="Load" label="Load"/>
@@ -22,30 +22,30 @@
         <metric value-xpath="TotalInternal" label="Total Internal (MB)"/>
     </stat>
     <stat name="ReceiveKbpsThroughput" label="Network">
-        <metric label-xpath="Interface" value-xpath="oneMinute" label-suffix="|Incoming KB/sec"
+        <metric label-xpath="Interface" value-xpath="tenSeconds" label-suffix="|Incoming KB/sec"
                 metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Total Incoming KB/sec"/>
     </stat>
     <stat name="TransmitKbpsThroughput" label="Network">
-        <metric label-xpath="Interface" value-xpath="oneMinute" label-suffix="|Outgoing KB/sec"
+        <metric label-xpath="Interface" value-xpath="tenSeconds" label-suffix="|Outgoing KB/sec"
                 metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Total Outgoing KB/sec"/>
     </stat>
     <stat name="NetworkReceivePacketThroughput" label="Network">
-        <metric label-xpath="InterfaceName" value-xpath="oneMinute" label-suffix="|Incoming Packets/sec"
+        <metric label-xpath="InterfaceName" value-xpath="tenSeconds" label-suffix="|Incoming Packets/sec"
                 metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Total Incoming Packets/sec"/>
     </stat>
     <stat name="NetworkTransmitPacketThroughput" label="Network">
-        <metric label-xpath="InterfaceName" value-xpath="oneMinute" label-suffix="|Outgoing Packets/sec"
+        <metric label-xpath="InterfaceName" value-xpath="tenSeconds" label-suffix="|Outgoing Packets/sec"
                 metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Total Outgoing Packets/sec"/>
     </stat>
     <stat name="HTTPMeanTransactionTime" label="Transactions">
-        <metric label-xpath="proxy" value-xpath="oneMinute" label-suffix="|Average Response Time (ms)"
+        <metric label-xpath="proxy" value-xpath="tenSeconds" label-suffix="|Average Response Time (ms)"
                 metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Average Response Time (ms)" aggregation-type="AVERAGE"/>
     </stat>
     <stat name="HTTPTransactions" label="Transactions">
-        <metric label-xpath="proxy" value-xpath="oneMinute" label-suffix="|Calls per Minute"  multiplier="60"
+        <metric label-xpath="proxy" value-xpath="tenSeconds" label-suffix="|Calls per Minute"  multiplier="60"
                 metric-type="COLLECTIVE_OBSERVED_CURRENT" aggregate-label="Calls per Minute"/>
     </stat>
     <stat name="ConnectionsAccepted" label="Transactions">
-        <metric value-xpath="oneMinute" label="Connections Accepted" metric-type="COLLECTIVE_OBSERVED_CURRENT"/>
+        <metric value-xpath="tenSeconds" label="Connections Accepted" metric-type="COLLECTIVE_OBSERVED_CURRENT"/>
     </stat>
 </stats>

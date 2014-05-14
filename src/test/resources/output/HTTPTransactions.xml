@@ -6,7 +6,7 @@
             <dp:status>
                 <HTTPTransactions xmlns:env="http://www.w3.org/2003/05/soap-envelope">
                     <proxy>helloworld_xmlfw</proxy>
-                    <tenSeconds>1</tenSeconds>
+                    <tenSeconds>3</tenSeconds>
                     <oneMinute>3</oneMinute>
                     <tenMinutes>0</tenMinutes>
                     <oneHour>2</oneHour>
@@ -14,7 +14,7 @@
                 </HTTPTransactions>
                 <HTTPTransactions xmlns:env="http://www.w3.org/2003/05/soap-envelope">
                     <proxy>userws_proxy</proxy>
-                    <tenSeconds>1</tenSeconds>
+                    <tenSeconds>7</tenSeconds>
                     <oneMinute>7</oneMinute>
                     <tenMinutes>0</tenMinutes>
                     <oneHour>2</oneHour>

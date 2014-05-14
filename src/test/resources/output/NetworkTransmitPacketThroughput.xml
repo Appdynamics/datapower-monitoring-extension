@@ -6,8 +6,8 @@
                 <NetworkTransmitPacketThroughput xmlns:env="http://www.w3.org/2003/05/soap-envelope">
                     <InterfaceType>Ethernet</InterfaceType>
                     <InterfaceName>eth0</InterfaceName>
-                    <tenSeconds>0</tenSeconds>
-                    <oneMinute>1</oneMinute>
+                    <tenSeconds>1</tenSeconds>
+                    <oneMinute>8</oneMinute>
                     <tenMinutes>0</tenMinutes>
                     <oneHour>0</oneHour>
                     <oneDay>1</oneDay>
@@ -15,8 +15,8 @@
                 <NetworkTransmitPacketThroughput xmlns:env="http://www.w3.org/2003/05/soap-envelope">
                     <InterfaceType>Ethernet</InterfaceType>
                     <InterfaceName>eth1</InterfaceName>
-                    <tenSeconds>0</tenSeconds>
-                    <oneMinute>2</oneMinute>
+                    <tenSeconds>2</tenSeconds>
+                    <oneMinute>7</oneMinute>
                     <tenMinutes>0</tenMinutes>
                     <oneHour>0</oneHour>
                     <oneDay>0</oneDay>
@@ -24,8 +24,8 @@
                 <NetworkTransmitPacketThroughput xmlns:env="http://www.w3.org/2003/05/soap-envelope">
                     <InterfaceType>Ethernet</InterfaceType>
                     <InterfaceName>eth2</InterfaceName>
-                    <tenSeconds>0</tenSeconds>
-                    <oneMinute>3</oneMinute>
+                    <tenSeconds>3</tenSeconds>
+                    <oneMinute>6</oneMinute>
                     <tenMinutes>0</tenMinutes>
                     <oneHour>0</oneHour>
                     <oneDay>0</oneDay>
@@ -33,8 +33,8 @@
                 <NetworkTransmitPacketThroughput xmlns:env="http://www.w3.org/2003/05/soap-envelope">
                     <InterfaceType>Ethernet</InterfaceType>
                     <InterfaceName>eth3</InterfaceName>
-                    <tenSeconds>0</tenSeconds>
-                    <oneMinute>4</oneMinute>
+                    <tenSeconds>4</tenSeconds>
+                    <oneMinute>5</oneMinute>
                     <tenMinutes>0</tenMinutes>
                     <oneHour>0</oneHour>
                     <oneDay>0</oneDay>

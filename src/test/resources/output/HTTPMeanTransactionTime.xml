@@ -5,7 +5,7 @@
             <dp:status>
                 <HTTPMeanTransactionTime xmlns:env="http://www.w3.org/2003/05/soap-envelope">
                     <proxy>helloworld_xmlfw</proxy>
-                    <tenSeconds>26</tenSeconds>
+                    <tenSeconds>8</tenSeconds>
                     <oneMinute>8</oneMinute>
                     <tenMinutes>29</tenMinutes>
                     <oneHour>30</oneHour>
