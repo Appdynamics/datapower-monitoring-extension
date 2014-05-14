@@ -5,7 +5,7 @@
             <dp:status>
                 <HTTPMeanTransactionTime xmlns:env="http://www.w3.org/2003/05/soap-envelope">
                     <proxy>helloworld_xmlfw</proxy>
-                    <tenSeconds>8</tenSeconds>
+                    <tenSeconds>8.03</tenSeconds>
                     <oneMinute>8</oneMinute>
                     <tenMinutes>29</tenMinutes>
                     <oneHour>30</oneHour>
@@ -13,7 +13,7 @@
                 </HTTPMeanTransactionTime>
                 <HTTPMeanTransactionTime xmlns:env="http://www.w3.org/2003/05/soap-envelope">
                     <proxy>userws_proxy</proxy>
-                    <tenSeconds>15</tenSeconds>
+                    <tenSeconds>16.52</tenSeconds>
                     <oneMinute>15</oneMinute>
                     <tenMinutes>17</tenMinutes>
                     <oneHour>18</oneHour>
@@ -21,7 +21,7 @@
                 </HTTPMeanTransactionTime>
                 <HTTPMeanTransactionTime xmlns:env="http://www.w3.org/2003/05/soap-envelope">
                     <proxy>wsproxy</proxy>
-                    <tenSeconds>0</tenSeconds>
+                    <tenSeconds></tenSeconds>
                     <oneMinute>0</oneMinute>
                     <tenMinutes>0</tenMinutes>
                     <oneHour>0</oneHour>

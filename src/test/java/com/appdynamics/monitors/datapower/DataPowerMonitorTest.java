@@ -48,9 +48,8 @@ public class DataPowerMonitorTest {
 
         //HTTPMeanTransactionTime
         put("DP|Transactions|helloworld_xmlfw|Average Response Time (ms)","8", "COLLECTIVE_OBSERVED_AVERAGE");
-        put("DP|Transactions|userws_proxy|Average Response Time (ms)","15", "COLLECTIVE_OBSERVED_AVERAGE");
-        put("DP|Transactions|wsproxy|Average Response Time (ms)","0", "COLLECTIVE_OBSERVED_AVERAGE");
-        put("DP|Transactions|Average Response Time (ms)","8", "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|Transactions|userws_proxy|Average Response Time (ms)","17", "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|Transactions|Average Response Time (ms)","12", "COLLECTIVE_OBSERVED_AVERAGE");
         //HTTPTransactions
         put("DP|Transactions|helloworld_xmlfw|Calls per Minute","180", "COLLECTIVE_OBSERVED_CURRENT");
         put("DP|Transactions|userws_proxy|Calls per Minute","420", "COLLECTIVE_OBSERVED_CURRENT");

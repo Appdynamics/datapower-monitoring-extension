@@ -138,7 +138,7 @@ public class DataPowerMonitor extends AManagedMonitor {
                     } else {
                         value = aggregate.getSum();
                     }
-                    if(value!=null){
+                    if (value != null) {
                         String label = StringUtils.trim(metric.getAggregateLabel(), "|");
                         String metricPath = statLabel + "|" + label;
                         if (metric.getMultiplier() != null) {
@@ -163,12 +163,15 @@ public class DataPowerMonitor extends AManagedMonitor {
     }
 
     private String multiply(String value, BigDecimal multiplier) {
-        if (value != null && multiplier != null) {
-            BigDecimal multiply = new BigDecimal(value).multiply(multiplier);
-            return multiply.setScale(0, RoundingMode.HALF_UP).toString();
-        } else {
-            return value;
+        if (StringUtils.hasText(value)) {
+            if (multiplier != null) {
+                BigDecimal multiply = new BigDecimal(value).multiply(multiplier);
+                return multiply.setScale(0, RoundingMode.HALF_UP).toString();
+            } else {
+                return new BigDecimal(value).setScale(0, RoundingMode.HALF_UP).toString();
+            }
         }
+        return null;
     }
 
     private String getLabel(Xml xml, Metric metric) {
