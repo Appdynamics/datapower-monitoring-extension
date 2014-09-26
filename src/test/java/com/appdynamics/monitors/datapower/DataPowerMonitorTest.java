@@ -35,26 +35,26 @@ public class DataPowerMonitorTest {
     private Map<String, Map<String, String>> expectedDataMap = new HashMap<String, Map<String, String>>();
 
     public DataPowerMonitorTest() {
-        put("DP|Network|eth0|Outgoing Packets/sec", "1", "COLLECTIVE_OBSERVED_AVERAGE");
-        put("DP|Network|eth1|Outgoing Packets/sec", "2", "COLLECTIVE_OBSERVED_AVERAGE");
-        put("DP|Network|eth2|Outgoing Packets/sec", "3", "COLLECTIVE_OBSERVED_AVERAGE");
-        put("DP|Network|eth3|Outgoing Packets/sec", "4", "COLLECTIVE_OBSERVED_AVERAGE");
-        put("DP|Network|Total Outgoing Packets/sec", "10", "COLLECTIVE_OBSERVED_AVERAGE");
-        put("DP|System|Memory|Used %", "21", "COLLECTIVE_OBSERVED_AVERAGE");
-        put("DP|System|Memory|Total (MB)", numberToString(3368445D/1024D), "COLLECTIVE_OBSERVED_AVERAGE");
-        put("DP|System|Memory|Used (MB)", numberToString(717004D/1024D), "COLLECTIVE_OBSERVED_AVERAGE");
-        put("DP|System|Memory|Free (MB)", numberToString(2651441D/1024D), "COLLECTIVE_OBSERVED_AVERAGE");
-        put("DP|System|Memory|Requested (MB)", numberToString(722628D/1024D), "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|test|Network|eth0|Outgoing Packets/sec", "1", "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|test|Network|eth1|Outgoing Packets/sec", "2", "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|test|Network|eth2|Outgoing Packets/sec", "3", "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|test|Network|eth3|Outgoing Packets/sec", "4", "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|test|Network|Total Outgoing Packets/sec", "10", "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|test|System|Memory|Used %", "21", "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|test|System|Memory|Total (MB)", numberToString(3368445D/1024D), "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|test|System|Memory|Used (MB)", numberToString(717004D/1024D), "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|test|System|Memory|Free (MB)", numberToString(2651441D/1024D), "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|test|System|Memory|Requested (MB)", numberToString(722628D/1024D), "COLLECTIVE_OBSERVED_AVERAGE");
 
         //HTTPMeanTransactionTime
-        put("DP|Transactions|helloworld_xmlfw|Average Response Time (ms)","8", "COLLECTIVE_OBSERVED_AVERAGE");
-        put("DP|Transactions|userws_proxy|Average Response Time (ms)","17", "COLLECTIVE_OBSERVED_AVERAGE");
-        put("DP|Transactions|Average Response Time (ms)","12", "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|test|Transactions|helloworld_xmlfw|Average Response Time (ms)","8", "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|test|Transactions|userws_proxy|Average Response Time (ms)","17", "COLLECTIVE_OBSERVED_AVERAGE");
+        put("DP|test|Transactions|Average Response Time (ms)","12", "COLLECTIVE_OBSERVED_AVERAGE");
         //HTTPTransactions
-        put("DP|Transactions|helloworld_xmlfw|Calls per Minute","180", "COLLECTIVE_OBSERVED_CURRENT");
-        put("DP|Transactions|userws_proxy|Calls per Minute","420", "COLLECTIVE_OBSERVED_CURRENT");
-        put("DP|Transactions|wsproxy|Calls per Minute","0", "COLLECTIVE_OBSERVED_CURRENT");
-        put("DP|Transactions|Calls per Minute","600", "COLLECTIVE_OBSERVED_CURRENT");
+        put("DP|test|Transactions|helloworld_xmlfw|Calls per Minute","180", "COLLECTIVE_OBSERVED_CURRENT");
+        put("DP|test|Transactions|userws_proxy|Calls per Minute","420", "COLLECTIVE_OBSERVED_CURRENT");
+        put("DP|test|Transactions|wsproxy|Calls per Minute","0", "COLLECTIVE_OBSERVED_CURRENT");
+        put("DP|test|Transactions|Calls per Minute","600", "COLLECTIVE_OBSERVED_CURRENT");
 
     }
 
@@ -97,17 +97,36 @@ public class DataPowerMonitorTest {
     }
 
     @Test
+    public void testDefaultArgs() throws TaskExecutionException, JAXBException {
+        DataPowerMonitor monitor = new DataPowerMonitor();
+        DataPowerMonitor spy = Mockito.spy(monitor);
+        Mockito.doAnswer(new Answer() {
+            public Object answer(InvocationOnMock inv) throws Throwable {
+                Map<String,String> argsMap = (Map<String, String>) inv.getArguments()[2];
+                Assert.assertEquals("default",argsMap.get("domains"));
+                Assert.assertEquals("Custom Metrics|Data Power",argsMap.get("metric-prefix"));
+                Assert.assertEquals("monitors/DataPowerMonitor/metrics.xml",argsMap.get("metric-info-file"));
+                return null;  //To change body of implemented methods use File | Settings | File Templates.
+            }
+        }).when(spy).fetchMetrics(Mockito.any(Stat[].class),Mockito.any(SimpleHttpClient.class),Mockito.any(Map.class));
+        HashMap<String, String> map = new HashMap<String, String>();
+        map.put("uri", "https://172.16.153.100:5550/service/mgmt/current");
+        spy.execute(map, null);
+    }
+
+    @Test
     public void testAll() throws TaskExecutionException {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("uri", "https://172.16.153.100:5550/service/mgmt/current");
         map.put("metric-prefix", "DP||");
+        map.put("domains", "test");
         DataPowerMonitor monitor = Mockito.spy(new DataPowerMonitor());
-        Mockito.doAnswer(new Answer<Xml[]>() {
-            public Xml[] answer(InvocationOnMock invocationOnMock) throws Throwable {
-                String operation = (String) invocationOnMock.getArguments()[1];
-                return getResponse(operation);
-            }
-        }).when(monitor).getResponse(Mockito.any(SimpleHttpClient.class), Mockito.anyString());
+//        Mockito.doAnswer(new Answer<Xml[]>() {
+//            public Xml[] answer(InvocationOnMock invocationOnMock) throws Throwable {
+//                String operation = (String) invocationOnMock.getArguments()[1];
+//                return getResponse(operation);
+//            }
+//        }).when(monitor).getResponse(Mockito.any(SimpleHttpClient.class), Mockito.anyString(), Mockito.anyString());
         Mockito.doAnswer(new Answer() {
             public Object answer(InvocationOnMock inv) throws Throwable {
                 Object[] args = inv.getArguments();

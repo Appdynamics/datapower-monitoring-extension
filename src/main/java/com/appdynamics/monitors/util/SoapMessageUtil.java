@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
+import javax.xml.namespace.QName;
 import javax.xml.soap.*;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -29,7 +30,7 @@ public class SoapMessageUtil {
         }
     }
 
-    public String createSoapMessage(String request) {
+    public String createSoapMessage(String request, String domain) {
         try {
             SOAPMessage soapMessage = messageFactory.createMessage();
             SOAPPart soapPart = soapMessage.getSOAPPart();
@@ -37,6 +38,7 @@ public class SoapMessageUtil {
             SOAPBody soapBody = envelope.getBody();
             soapBody.addNamespaceDeclaration("dp", "http://www.datapower.com/schemas/management");
             SOAPElement req = soapBody.addChildElement("request", "dp");
+            req.addAttribute(new QName("domain"),domain);
             SOAPElement status = req.addChildElement("get-status", "dp");
             status.setAttribute("class", request);
             ByteArrayOutputStream out = new ByteArrayOutputStream();

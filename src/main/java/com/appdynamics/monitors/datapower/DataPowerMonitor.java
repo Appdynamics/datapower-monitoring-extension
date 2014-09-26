@@ -6,6 +6,7 @@ import com.appdynamics.extensions.PathResolver;
 import com.appdynamics.extensions.StringUtils;
 import com.appdynamics.extensions.http.Response;
 import com.appdynamics.extensions.http.SimpleHttpClient;
+import com.appdynamics.extensions.http.SimpleHttpClientBuilder;
 import com.appdynamics.extensions.http.WebTarget;
 import com.appdynamics.extensions.util.AggregatedValue;
 import com.appdynamics.extensions.util.AggregationType;
@@ -46,6 +47,7 @@ public class DataPowerMonitor extends AManagedMonitor {
     public static final Map<String, String> DEFAULT_ARGS = new HashMap<String, String>() {{
         put("metric-prefix", "Custom Metrics|Data Power");
         put("metric-info-file", "monitors/DataPowerMonitor/metrics.xml");
+        put("domains", "default");
     }};
 
     private SoapMessageUtil soapMessageUtil;
@@ -69,7 +71,7 @@ public class DataPowerMonitor extends AManagedMonitor {
         argsMap = ArgumentsValidator.validateArguments(argsMap, DEFAULT_ARGS);
         logger.debug("The validated arguments are {}", argsMap);
         ArgumentsValidator.assertNotEmpty(argsMap, "metric-info-file", "uri");
-        SimpleHttpClient client = SimpleHttpClient.builder(argsMap).build();
+        SimpleHttpClient client = buildHttpClient(argsMap);
         String metricFilePath = argsMap.get("metric-info-file");
         Stat[] statsInfo = getStatsInfo(metricFilePath);
         if (statsInfo != null && statsInfo.length > 0) {
@@ -77,30 +79,40 @@ public class DataPowerMonitor extends AManagedMonitor {
         } else {
             logger.error("The metric file {} seems to be empty or invalid", metricFilePath);
         }
-        return new TaskOutput("Apache Monitor Completed");
+        return new TaskOutput("DataPower Monitor Completed");
     }
 
-    private void fetchMetrics(Stat[] statsInfo, SimpleHttpClient client, Map<String, String> argsMap) {
+    private SimpleHttpClient buildHttpClient(Map<String, String> argsMap) {
+        SimpleHttpClientBuilder builder = SimpleHttpClient.builder(argsMap);
+        builder.connectionTimeout(2000).socketTimeout(2000);
+        return builder.build();
+    }
+
+    protected void fetchMetrics(Stat[] statsInfo, SimpleHttpClient client, Map<String, String> argsMap) {
         String metricPrefix = argsMap.get(TaskInputArgs.METRIC_PREFIX);
-        for (Stat stat : statsInfo) {
-            String statLabel = stat.getLabel();
-            if (StringUtils.hasText(statLabel)) {
-                statLabel = metricPrefix + "|" + StringUtils.trim(statLabel.trim(), "|");
-            } else {
-                statLabel = metricPrefix;
-            }
-            String operation = stat.getName();
-            Metric[] metrics = stat.getMetrics();
-            if (metrics != null && metrics.length > 0) {
-                Xml[] response = getResponse(client, operation);
-                if (response != null) {
-                    extractData(statLabel, metrics, response, stat);
+        String[] domains = argsMap.get("domains").split(",");
+        for (String domain : domains) {
+            String domainPrefix = metricPrefix + "|" + domain;
+            for (Stat stat : statsInfo) {
+                String statLabel = stat.getLabel();
+                if (StringUtils.hasText(statLabel)) {
+                    statLabel = domainPrefix + "|" + StringUtils.trim(statLabel.trim(), "|");
+                } else {
+                    statLabel = domainPrefix;
+                }
+                String operation = stat.getName();
+                Metric[] metrics = stat.getMetrics();
+                if (metrics != null && metrics.length > 0) {
+                    Xml[] response = getResponse(client, operation, domain);
+                    if (response != null) {
+                        extractData(statLabel, metrics, response, stat);
+                    }
                 }
             }
         }
     }
 
-    private void extractData(String statLabel, Metric[] metrics, Xml[] response, Stat stat) {
+    private void extractData(String metricPrefix, Metric[] metrics, Xml[] response, Stat stat) {
         Aggregator<Metric> aggregator = new Aggregator<Metric>();
         for (Xml xml : response) {
             for (Metric metric : metrics) {
@@ -114,9 +126,9 @@ public class DataPowerMonitor extends AManagedMonitor {
                         value = multiply(value, metric.getMultiplier());
                         String label = getLabel(xml, metric);
                         if (StringUtils.hasText(label)) {
-                            label = statLabel + "|" + StringUtils.trim(label, "|");
+                            label = metricPrefix + "|" + StringUtils.trim(label, "|");
                         } else {
-                            label = statLabel + "|" + valueXpath.replace("\\W", "");
+                            label = metricPrefix + "|" + valueXpath.replace("\\W", "");
                         }
                         printMetric(label, value, getMetricType(metric, stat));
 
@@ -140,7 +152,7 @@ public class DataPowerMonitor extends AManagedMonitor {
                     }
                     if (value != null) {
                         String label = StringUtils.trim(metric.getAggregateLabel(), "|");
-                        String metricPath = statLabel + "|" + label;
+                        String metricPath = metricPrefix + "|" + label;
                         if (metric.getMultiplier() != null) {
                             value = value.multiply(metric.getMultiplier());
                         }
@@ -190,11 +202,13 @@ public class DataPowerMonitor extends AManagedMonitor {
         return label.trim();
     }
 
-    protected Xml[] getResponse(SimpleHttpClient client, String operation) {
-        String soapMessage = soapMessageUtil.createSoapMessage(operation);
+    protected Xml[] getResponse(SimpleHttpClient client, String operation, String domain) {
+        String soapMessage = soapMessageUtil.createSoapMessage(operation, domain);
         WebTarget target = client.target();
         Response response = null;
         try {
+            logger.debug("The SOAP Request Generated for the domain={} and operation={} is payload={}"
+                    ,domain,operation,soapMessage);
             response = target.post(soapMessage);
             if (response.getStatus() == 200) {
                 return soapMessageUtil.getSoapResponseBody(response.inputStream(), operation);

@@ -14,8 +14,9 @@
         <execution-timeout-in-secs>120</execution-timeout-in-secs>
         <task-arguments>
             <argument name="uri" is-required="true" default-value="https://172.16.153.100:5550/service/mgmt/current"/>
-            <argument name="username" is-required="false" default-value="admin"/>
-            <argument name="password" is-required="false" default-value="welcome"/>
+            <argument name="username" is-required="true" default-value="admin"/>
+            <argument name="password" is-required="true" default-value="welcome"/>
+            <argument name="domains" is-required="true" default-value="default"/>
             <!-- Optional Properties  -->
             <!--
             <argument name="proxy-host" is-required="false" default-value=""/>
