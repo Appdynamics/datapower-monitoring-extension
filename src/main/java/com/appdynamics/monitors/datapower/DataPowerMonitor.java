@@ -67,6 +67,13 @@ public class DataPowerMonitor extends AManagedMonitor {
     }
 
     public TaskOutput execute(Map<String, String> argsMap, TaskExecutionContext executionContext) throws TaskExecutionException {
+        if(logger.isDebugEnabled()){
+            logger.debug("Setting the ContextClassLoader of the thread {} from {} to {}"
+                    ,Thread.currentThread().getName()
+                    ,Thread.currentThread().getContextClassLoader()
+                    ,AManagedMonitor.class.getClassLoader());
+        }
+        Thread.currentThread().setContextClassLoader(AManagedMonitor.class.getClassLoader());
         logger.debug("The raw arguments are {}", argsMap);
         argsMap = ArgumentsValidator.validateArguments(argsMap, DEFAULT_ARGS);
         logger.debug("The validated arguments are {}", argsMap);
