@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+    <env:Body>
+        <dp:response xmlns:dp="http://www.datapower.com/schemas/management">
+            <dp:timestamp>2013-08-03T08:10:21Z</dp:timestamp>
+            <dp:status>
+                <DomainStatus xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                    <Domain>Domain1</Domain>
+                    <SaveNeeded>off</SaveNeeded>
+                    <TraceEnabled>off</TraceEnabled>
+                    <DebugEnabled>off</DebugEnabled>
+                    <ProbeEnabled>off</ProbeEnabled>
+                    <DiagEnabled>off</DiagEnabled>
+                    <CurrentCommand/>
+                    <QuiesceState/>
+                </DomainStatus>
+                <DomainStatus xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                    <Domain>Domain2</Domain>
+                    <SaveNeeded>off</SaveNeeded>
+                    <TraceEnabled>off</TraceEnabled>
+                    <DebugEnabled>off</DebugEnabled>
+                    <ProbeEnabled>off</ProbeEnabled>
+                    <DiagEnabled>off</DiagEnabled>
+                    <CurrentCommand/>
+                    <QuiesceState/>
+                </DomainStatus>
+                <DomainStatus xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                    <Domain>NotD0main</Domain>
+                    <SaveNeeded>off</SaveNeeded>
+                    <TraceEnabled>off</TraceEnabled>
+                    <DebugEnabled>off</DebugEnabled>
+                    <ProbeEnabled>off</ProbeEnabled>
+                    <DiagEnabled>off</DiagEnabled>
+                    <CurrentCommand/>
+                    <QuiesceState/>
+                </DomainStatus>
+            </dp:status>
+        </dp:response>
+    </env:Body>
+</env:Envelope>

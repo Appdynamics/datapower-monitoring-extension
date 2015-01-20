@@ -13,6 +13,7 @@ import com.appdynamics.extensions.util.AggregationType;
 import com.appdynamics.extensions.util.Aggregator;
 import com.appdynamics.extensions.xml.Xml;
 import com.appdynamics.monitors.util.SoapMessageUtil;
+import com.google.common.base.Strings;
 import com.singularity.ee.agent.systemagent.SystemAgent;
 import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
 import com.singularity.ee.agent.systemagent.api.MetricWriter;
@@ -31,8 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -47,7 +47,6 @@ public class DataPowerMonitor extends AManagedMonitor {
     public static final Map<String, String> DEFAULT_ARGS = new HashMap<String, String>() {{
         put("metric-prefix", "Custom Metrics|Data Power");
         put("metric-info-file", "monitors/DataPowerMonitor/metrics.xml");
-        put("domains", "default");
     }};
 
     private SoapMessageUtil soapMessageUtil;
@@ -67,11 +66,11 @@ public class DataPowerMonitor extends AManagedMonitor {
     }
 
     public TaskOutput execute(Map<String, String> argsMap, TaskExecutionContext executionContext) throws TaskExecutionException {
-        if(logger.isDebugEnabled()){
+        if (logger.isDebugEnabled()) {
             logger.debug("Setting the ContextClassLoader of the thread {} from {} to {}"
-                    ,Thread.currentThread().getName()
-                    ,Thread.currentThread().getContextClassLoader()
-                    ,AManagedMonitor.class.getClassLoader());
+                    , Thread.currentThread().getName()
+                    , Thread.currentThread().getContextClassLoader()
+                    , AManagedMonitor.class.getClassLoader());
         }
         Thread.currentThread().setContextClassLoader(AManagedMonitor.class.getClassLoader());
         logger.debug("The raw arguments are {}", argsMap);
@@ -82,11 +81,60 @@ public class DataPowerMonitor extends AManagedMonitor {
         String metricFilePath = argsMap.get("metric-info-file");
         Stat[] statsInfo = getStatsInfo(metricFilePath);
         if (statsInfo != null && statsInfo.length > 0) {
-            fetchMetrics(statsInfo, client, argsMap);
+            List<String> selectedDomains;
+            if (Strings.isNullOrEmpty(argsMap.get("domains"))) {
+                selectedDomains = getMatchingDomains(client, argsMap);
+            } else {
+                selectedDomains = Arrays.asList(argsMap.get("domains").split(","));
+            }
+            if(!selectedDomains.isEmpty()){
+                fetchMetrics(statsInfo, client, argsMap, selectedDomains);
+            } else{
+                logger.error("Cannot match/filter the domains based on the properties 'domains-regex' or 'domains'");
+            }
         } else {
             logger.error("The metric file {} seems to be empty or invalid", metricFilePath);
         }
         return new TaskOutput("DataPower Monitor Completed");
+    }
+
+    /**
+     * Gets the list of domains from the DataPower and then check if it matches with the pattern
+     *
+     * @param client
+     * @param argsMap
+     */
+    protected List<String> getMatchingDomains(SimpleHttpClient client, Map<String, String> argsMap) {
+        List<String> selectedDomains = new ArrayList<String>();
+        String domainRegex = argsMap.get("domains-regex");
+        if (!Strings.isNullOrEmpty(domainRegex)) {
+            Xml[] domains = getResponse(client, "DomainStatus", null);
+            if (domains != null) {
+                String[] split = domainRegex.split("(?<!\\\\),");
+                for (Xml domain : domains) {
+                    String domainName = domain.getText("Domain");
+                    for (String regex : split) {
+                        if (domainName.matches(regex)) {
+                            logger.debug("The match of regex {} with the domain name {} returned true", regex, domainName);
+                            selectedDomains.add(domainName);
+                            break;
+                        } else {
+                            logger.debug("The match of regex {} with the domain name {} returned false", regex, domainName);
+                        }
+                    }
+                }
+            } else {
+                logger.warn("No domains were discovered, adding only the 'default' domain");
+                selectedDomains.add("default");
+            }
+        } else {
+            logger.info("The properties 'domains' and 'domains-regex' are empty. Using the only the 'default' domain");
+            selectedDomains.add("default");
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("The selected domains are {}", selectedDomains);
+        }
+        return selectedDomains;
     }
 
     private SimpleHttpClient buildHttpClient(Map<String, String> argsMap) {
@@ -95,10 +143,9 @@ public class DataPowerMonitor extends AManagedMonitor {
         return builder.build();
     }
 
-    protected void fetchMetrics(Stat[] statsInfo, SimpleHttpClient client, Map<String, String> argsMap) {
+    protected void fetchMetrics(Stat[] statsInfo, SimpleHttpClient client, Map<String, String> argsMap, List<String> selectedDomains) {
         String metricPrefix = argsMap.get(TaskInputArgs.METRIC_PREFIX);
-        String[] domains = argsMap.get("domains").split(",");
-        for (String domain : domains) {
+        for (String domain : selectedDomains) {
             String domainPrefix = metricPrefix + "|" + domain;
             for (Stat stat : statsInfo) {
                 String statLabel = stat.getLabel();
@@ -215,7 +262,7 @@ public class DataPowerMonitor extends AManagedMonitor {
         Response response = null;
         try {
             logger.debug("The SOAP Request Generated for the domain={} and operation={} is payload={}"
-                    ,domain,operation,soapMessage);
+                    , domain, operation, soapMessage);
             response = target.post(soapMessage);
             if (response.getStatus() == 200) {
                 return soapMessageUtil.getSoapResponseBody(response.inputStream(), operation);

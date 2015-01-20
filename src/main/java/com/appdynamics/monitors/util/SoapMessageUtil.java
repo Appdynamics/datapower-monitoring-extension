@@ -38,7 +38,9 @@ public class SoapMessageUtil {
             SOAPBody soapBody = envelope.getBody();
             soapBody.addNamespaceDeclaration("dp", "http://www.datapower.com/schemas/management");
             SOAPElement req = soapBody.addChildElement("request", "dp");
-            req.addAttribute(new QName("domain"),domain);
+            if (domain != null) {
+                req.addAttribute(new QName("domain"), domain);
+            }
             SOAPElement status = req.addChildElement("get-status", "dp");
             status.setAttribute("class", request);
             ByteArrayOutputStream out = new ByteArrayOutputStream();
