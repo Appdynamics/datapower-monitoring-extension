@@ -1,11 +1,16 @@
 package com.appdynamics.monitors.datapower;
 
+import com.google.common.base.Strings;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
+import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,7 +32,7 @@ public class MockDataPowerServer {
     private static Server server;
 
     public static void main(String[] args) throws Exception {
-        startServer();
+        startServerSSL();
     }
 
     public static void startServerAsync() {
@@ -55,13 +61,35 @@ public class MockDataPowerServer {
         }
         server = new Server();
         SocketConnector connector = new SocketConnector();
-        int port = 8654;
+        int port = 5550;
         connector.setPort(port);
         server.setConnectors(new Connector[]{connector});
         server.setHandler(new DelegateHandler());
         logger.info("Starting the server on {}", port);
         server.start();
     }
+
+    public static void startServerSSL() throws Exception {
+        SslContextFactory factory = new SslContextFactory();
+//        factory.setProtocol("TLSv1.2");
+        factory.setIncludeProtocols("TLSv1.2");
+//        factory.setExcludeProtocols("TLSv1.1","TLSv1.0");
+        factory.setKeyStoreResource(Resource.newClassPathResource("/keystore/keystore.jks"));
+        factory.setKeyStorePassword("changeit");
+        SslSelectChannelConnector connector = new SslSelectChannelConnector(factory);
+        if (server != null) {
+            server.stop();
+        }
+        server = new Server();
+        int port = 5550;
+        connector.setPort(port);
+        server.setConnectors(new Connector[]{connector});
+        server.setHandler(new DelegateHandler());
+        logger.info("Starting the server on {}", port);
+        server.start();
+    }
+
+
 
     private static class DelegateHandler extends AbstractHandler {
 
@@ -70,12 +98,33 @@ public class MockDataPowerServer {
 
         public void handle(String target, Request baseRequest, HttpServletRequest request,
                            HttpServletResponse response) throws IOException, ServletException {
+            String authorization = request.getHeader("Authorization");
+            if (!Strings.isNullOrEmpty(authorization)) {
+                logger.info("The Auth Header is {}", authorization);
+                String userPass = new String(Base64.decodeBase64(authorization.replace("Basic ", "")));
+                if ("user:welcome".equals(userPass)) {
+                    handle(target, request, response);
+                } else {
+                    logger.info("InCorrect User and Password");
+                    response.setStatus(401);
+                }
+            } else {
+                response.setStatus(401);
+                logger.info("Auth not present, requesting authentication");
+                response.setHeader("WWW-Authenticate", "Basic realm=\"Mock Test\"");
+            }
+            baseRequest.setHandled(true);
+
+        }
+
+        private void handle(String target, HttpServletRequest request, HttpServletResponse response) throws IOException {
+            logger.info("Serving a connection {}", target);
             String inXml = IOUtils.toString(request.getInputStream(), "UTF-8");
             Matcher matcher = Pattern.compile("class=\"(\\w+)\"").matcher(inXml);
-
             if (matcher.find()) {
                 String operation = matcher.group(1);
-                InputStream in = getClass().getResourceAsStream("/output/" + operation + ".xml");
+                String file = "/output/" + operation + ".xml";
+                InputStream in = getClass().getResourceAsStream(file);
                 if (in != null) {
                     ServletOutputStream out = response.getOutputStream();
                     IOUtils.write(IOUtils.toByteArray(in), out);
@@ -83,12 +132,14 @@ public class MockDataPowerServer {
                     out.flush();
                     out.close();
                 } else {
-                    logger.error("Cannot find the response file for the operation {}", operation);
+                    logger.error("Cannot find the response file for the operation {}", file);
                 }
             } else {
+                response.setStatus(404);
+                PrintWriter writer = response.getWriter();
+                writer.close();
                 logger.error("Cannot find the operation from the input {}", inXml);
             }
-            response.setStatus(200);
         }
     }
 }
