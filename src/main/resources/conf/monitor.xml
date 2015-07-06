@@ -6,29 +6,15 @@
     </monitor-configuration>
     <monitor-run-task>
         <execution-style>periodic</execution-style>
-        <execution-frequency-in-seconds>40</execution-frequency-in-seconds>
+        <execution-frequency-in-seconds>60</execution-frequency-in-seconds>
         <name>DataPowerMonitor Monitor Run Task</name>
         <display-name>DataPowerMonitor Task</display-name>
         <description>DataPowerMonitor Task</description>
         <type>java</type>
         <execution-timeout-in-secs>120</execution-timeout-in-secs>
         <task-arguments>
-            <argument name="uri" is-required="true" default-value="https://172.16.153.100:5550/service/mgmt/current"/>
-            <argument name="username" is-required="true" default-value="admin"/>
-            <argument name="password" is-required="true" default-value="welcome"/>
-
-            <!-- Optional Properties  -->
-            <!--
-            <argument name="domains" is-required="true" default-value="default"/>
-            <argument name="domains-regex" is-required="true" default-value="fin_domain.*,.*security.*"/>
-
-            <argument name="proxy-host" is-required="false" default-value=""/>
-            <argument name="proxy-port" is-required="false" default-value=""/>
-            <argument name="proxy-username" is-required="false" default-value=""/>
-            <argument name="proxy-password" is-required="false" default-value=""/>
-            <argument name="metric-prefix" is-required="false" default-value="Custom Metrics|DataPower"/>
-
-            -->
+            <argument name="config-file" is-required="true" default-value="monitors/DataPowerMonitor/config.yml" />
+            <argument name="metric-info-file" is-required="true" default-value="monitors/DataPowerMonitor/metrics.xml"/>
         </task-arguments>
         <java-task>
             <classpath>datapower-monitoring-extension.jar</classpath>
