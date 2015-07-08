@@ -1,31 +1,23 @@
 package com.appdynamics.monitors.datapower;
 
+import com.appdynamics.TaskInputArgs;
 import com.appdynamics.extensions.StringUtils;
+import com.appdynamics.extensions.http.Response;
+import com.appdynamics.extensions.http.SimpleHttpClient;
+import com.appdynamics.extensions.http.SimpleHttpClientBuilder;
+import com.appdynamics.extensions.http.WebTarget;
 import com.appdynamics.extensions.util.AggregatedValue;
 import com.appdynamics.extensions.util.AggregationType;
 import com.appdynamics.extensions.util.Aggregator;
 import com.appdynamics.extensions.xml.Xml;
 import com.appdynamics.monitors.util.SoapMessageUtil;
 import com.google.common.base.Strings;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by abey.tom on 5/12/15.
@@ -39,17 +31,17 @@ public class DataPowerMonitorTask implements Runnable {
     private Map<String, ?> config;
     private SoapMessageUtil soapMessageUtil;
     private DataPowerMonitor metricPrinter;
-    private CloseableHttpClient httpClient;
+    private SimpleHttpClient httpClient;
 
     protected DataPowerMonitorTask() {
     }
 
     public void run() {
-        Thread.currentThread().setContextClassLoader(DataPowerMonitor.class.getClassLoader());
         long time = System.currentTimeMillis();
         String uri = (String) server.get("uri");
         try {
             if (!Strings.isNullOrEmpty(uri)) {
+                httpClient = buildHttpClient();
                 String displayName = (String) server.get("displayName");
                 if (!Strings.isNullOrEmpty(displayName)) {
                     metricPrefix = metricPrefix + displayName + "|";
@@ -66,10 +58,89 @@ public class DataPowerMonitorTask implements Runnable {
             }
         } catch (Exception e) {
             logger.error("Exception while running the DataPower task in the server " + uri, e);
+        } finally {
+            if (httpClient != null) {
+                logger.debug("Closing the http connection {}", httpClient);
+                httpClient.close();
+            }
         }
         if (logger.isDebugEnabled()) {
             logger.debug("Time taken to run the task on server [{}] is {} ms", uri, (System.currentTimeMillis() - time));
         }
+    }
+
+    private SimpleHttpClient buildHttpClient() {
+
+
+        HashMap<String, String> argsMap = new HashMap<String, String>();
+        argsMap.put(TaskInputArgs.URI, (String) server.get("uri"));
+        String username = (String) server.get("username");
+        if (username != null) {
+            argsMap.put(TaskInputArgs.USER, username);
+        }
+        String password = (String) server.get("password");
+        if (password != null) {
+            argsMap.put(TaskInputArgs.PASSWORD, password);
+        }
+        String passwordEncrypted = (String) server.get("passwordEncrypted");
+        if (passwordEncrypted != null) {
+            argsMap.put(TaskInputArgs.PASSWORD_ENCRYPTED, passwordEncrypted);
+            argsMap.put(TaskInputArgs.ENCRYPTION_KEY, (String) config.get("encryptionKey"));
+        }
+        SimpleHttpClientBuilder builder = new SimpleHttpClientBuilder();
+
+        Map connection = (Map) config.get("connection");
+        if (connection != null) {
+            Integer socketTimeout = (Integer) connection.get("socketTimeout");
+            if (socketTimeout == null) {
+                socketTimeout = 5000;
+            }
+            Integer connectTimeout = (Integer) connection.get("connectTimeout");
+            if (connectTimeout == null) {
+                connectTimeout = 5000;
+            }
+            builder.socketTimeout(socketTimeout).connectionTimeout(connectTimeout);
+            String sslProtocol = (String) connection.get("sslProtocol");
+            if (sslProtocol != null) {
+                argsMap.put("ssl-protocol", sslProtocol);
+            }
+            logger.debug("Setting the connect timeout to {} and socket timeout to {}", connectTimeout, socketTimeout);
+        }
+        Map<String, String> proxy = (Map<String, String>) config.get("proxy");
+        if (proxy != null) {
+            String uri = proxy.get("uri");
+            if (uri != null) {
+                argsMap.put(TaskInputArgs.PROXY_URI, uri);
+            }
+
+            String proxyUser = proxy.get("username");
+            if (proxyUser != null) {
+                argsMap.put(TaskInputArgs.PROXY_USER, proxyUser);
+            }
+
+            String proxyPassword = proxy.get("password");
+            if (proxyPassword != null) {
+                argsMap.put(TaskInputArgs.PROXY_PASSWORD, proxyPassword);
+            }
+        }
+        if (logger.isDebugEnabled()) {
+            StringBuilder sb = new StringBuilder();
+            for (String key : argsMap.keySet()) {
+                sb.append(key).append("=");
+                if (!key.toLowerCase().contains("password")) {
+                    sb.append(argsMap.get(key));
+                } else {
+                    sb.append("*********");
+                }
+                sb.append(",");
+            }
+            if (sb.length() > 0) {
+                sb.deleteCharAt(sb.length() - 1);
+            }
+            logger.debug("The task args for the http client are {}", sb);
+        }
+        builder.taskArgs(argsMap);
+        return builder.build();
     }
 
     protected void fetchMetrics(List<String> selectedDomains) {
@@ -227,34 +298,29 @@ public class DataPowerMonitorTask implements Runnable {
         return selectedDomains;
     }
 
-    protected Xml[] getResponse(final String operation, String domain) {
-        final String uri = (String) server.get("uri");
-        final String soapMessage = soapMessageUtil.createSoapMessage(operation, domain);
+    protected Xml[] getResponse(String operation, String domain) {
+        String soapMessage = soapMessageUtil.createSoapMessage(operation, domain);
+        WebTarget target = httpClient.target();
+        Response response = null;
         try {
-            logger.debug("The SOAP Request Generated for the domain=[{}] and operation=[{}] is payload=[{}]"
+            logger.debug("The SOAP Request Generated for the domain={} and operation={} is payload={}"
                     , domain, operation, soapMessage);
-            HttpPost post = new HttpPost(uri);
-            logger.debug("The resource is {}", uri);
-            RequestConfig.Builder config =  RequestConfig.custom();
-
-            post.setEntity(new StringEntity(soapMessage, ContentType.APPLICATION_XML));
-            return httpClient.execute(post, new ResponseHandler<Xml[]>() {
-                public Xml[] handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
-                    if (response.getStatusLine().getStatusCode() == 200) {
-                        return soapMessageUtil.getSoapResponseBody(response.getEntity().getContent(), operation);
-                    } else {
-                        logger.error("Error while fetching the data from absolute url = [{}] and payload = [{}]"
-                                , uri, soapMessage);
-                        logger.error("The response status is [{}] and data is [{}]", response.getStatusLine()
-                                , EntityUtils.toString(response.getEntity()));
-                        return new Xml[0];
-                    }
-                }
-            });
+            response = target.post(soapMessage);
+            if (response.getStatus() == 200) {
+                return soapMessageUtil.getSoapResponseBody(response.inputStream(), operation);
+            } else {
+                logger.error("Error while fetching the data from absolute url={}, url={} and payload={}"
+                        , target.getAbsoluteUrl(), target.getUrl(), soapMessage);
+                logger.error("The response is {}", response.string());
+            }
         } catch (Exception e) {
-            logger.error("Error while fetching the data from url [{}] and payload = [{}]"
-                    , uri, soapMessage);
+            logger.error("Error while fetching the data from absolute url={}, url={} and payload={}"
+                    , target.getAbsoluteUrl(), target.getUrl(), soapMessage);
             logger.error("", e);
+        } finally {
+            if (response != null) {
+                response.close();
+            }
         }
         return new Xml[0];
     }
@@ -297,7 +363,7 @@ public class DataPowerMonitorTask implements Runnable {
             return this;
         }
 
-        public Builder httpClient(CloseableHttpClient httpClient) {
+        public Builder httpClient(SimpleHttpClient httpClient) {
             task.httpClient = httpClient;
             return this;
         }

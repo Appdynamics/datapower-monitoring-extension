@@ -2,7 +2,6 @@ package com.appdynamics.monitors.datapower;
 
 import com.appdynamics.extensions.StringUtils;
 import com.appdynamics.extensions.file.FileLoader;
-import com.appdynamics.extensions.http.Http4ClientBuilder;
 import com.appdynamics.extensions.yml.YmlReader;
 import com.appdynamics.monitors.util.SoapMessageUtil;
 import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
@@ -10,7 +9,6 @@ import com.singularity.ee.agent.systemagent.api.MetricWriter;
 import com.singularity.ee.agent.systemagent.api.TaskExecutionContext;
 import com.singularity.ee.agent.systemagent.api.TaskOutput;
 import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +17,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -46,8 +43,6 @@ public class DataPowerMonitor extends AManagedMonitor {
     private String metricPrefix;
     private ExecutorService executorService;
     private int executorServiceSize;
-    private CloseableHttpClient httpClient;
-
 
     public DataPowerMonitor() {
         String version = getClass().getPackage().getImplementationTitle();
@@ -93,7 +88,7 @@ public class DataPowerMonitor extends AManagedMonitor {
     }
 
     protected void reloadConfig(File file) {
-        config = YmlReader.readFromFile(file);
+        config = YmlReader.readFromFileAsMap(file);
         if (config != null) {
             metricPrefix = getMetricPrefix();
             Integer numberOfThreads = (Integer) config.get("numberOfThreads");
@@ -109,16 +104,6 @@ public class DataPowerMonitor extends AManagedMonitor {
                 executorService = createThreadPool(numberOfThreads);
             }
             executorServiceSize = numberOfThreads;
-            CloseableHttpClient newHttpClient = Http4ClientBuilder.getBuilder(config).build();
-            logger.info("Created the new instance of Http Client {}", newHttpClient);
-            if (httpClient != null) {
-                logger.info("Shutting down the old instance of the http client");
-                try {
-                    httpClient.close();
-                } catch (IOException e) {
-                }
-            }
-            httpClient = newHttpClient;
         } else {
             throw new IllegalArgumentException("The config cannot be initialized from the file " + file.getAbsolutePath());
         }
@@ -193,7 +178,6 @@ public class DataPowerMonitor extends AManagedMonitor {
                 .config(config)
                 .soapMessageUtil(soapMessageUtil)
                 .metricWriter(this)
-                .httpClient(httpClient)
                 .build();
     }
 

@@ -2,50 +2,50 @@
     <stat name="CPUUsage" label="System">
         <metric value-xpath="tenSeconds" label="CPU Usage %" metric-type="COLLECTIVE_OBSERVED_AVERAGE"/>
     </stat>
-    <!--<stat name="SystemUsage" label="System" metric-type="COLLECTIVE_OBSERVED_CURRENT">-->
-        <!--<metric value-xpath="Load" label="Load"/>-->
-        <!--<metric value-xpath="WorkList" label="Work List"/>-->
-    <!--</stat>-->
-    <!--<stat name="MemoryStatus" label="System|Memory" metric-type="COLLECTIVE_OBSERVED_AVERAGE">-->
-        <!--<metric value-xpath="Usage" label="Used %"/>-->
-        <!--<metric value-xpath="TotalMemory" label="Total (MB)" multiplier="0.0009765625"/>-->
-        <!--<metric value-xpath="UsedMemory" label="Used (MB)" multiplier="0.0009765625"/>-->
-        <!--<metric value-xpath="FreeMemory" label="Free (MB)" multiplier="0.0009765625"/>-->
-        <!--<metric value-xpath="ReqMemory" label="Requested (MB)" multiplier="0.0009765625"/>-->
-    <!--</stat>-->
-    <!--<stat name="FilesystemStatus" label="System|File System" metric-type="COLLECTIVE_OBSERVED_AVERAGE">-->
-        <!--<metric value-xpath="FreeEncrypted" label="Free Encrypted (MB)"/>-->
-        <!--<metric value-xpath="TotalEncrypted" label="Total Encrypted (MB)"/>-->
-        <!--<metric value-xpath="FreeTemporary" label="Free Temporary (MB)"/>-->
-        <!--<metric value-xpath="TotalTemporary" label="Total Temporary (MB)"/>-->
-        <!--<metric value-xpath="FreeInternal" label="Free Internal (MB)"/>-->
-        <!--<metric value-xpath="TotalInternal" label="Total Internal (MB)"/>-->
-    <!--</stat>-->
-    <!--<stat name="ReceiveKbpsThroughput" label="Network">-->
-        <!--<metric label-xpath="Interface" value-xpath="tenSeconds" label-suffix="|Incoming KB/sec"-->
-                <!--metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Total Incoming KB/sec"/>-->
-    <!--</stat>-->
-    <!--<stat name="TransmitKbpsThroughput" label="Network">-->
-        <!--<metric label-xpath="Interface" value-xpath="tenSeconds" label-suffix="|Outgoing KB/sec"-->
-                <!--metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Total Outgoing KB/sec"/>-->
-    <!--</stat>-->
-    <!--<stat name="NetworkReceivePacketThroughput" label="Network">-->
-        <!--<metric label-xpath="InterfaceName" value-xpath="tenSeconds" label-suffix="|Incoming Packets/sec"-->
-                <!--metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Total Incoming Packets/sec"/>-->
-    <!--</stat>-->
-    <!--<stat name="NetworkTransmitPacketThroughput" label="Network">-->
-        <!--<metric label-xpath="InterfaceName" value-xpath="tenSeconds" label-suffix="|Outgoing Packets/sec"-->
-                <!--metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Total Outgoing Packets/sec"/>-->
-    <!--</stat>-->
-    <!--<stat name="HTTPMeanTransactionTime" label="Transactions">-->
-        <!--<metric label-xpath="proxy" value-xpath="tenSeconds" label-suffix="|Average Response Time (ms)"-->
-                <!--metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Average Response Time (ms)" aggregation-type="AVERAGE"/>-->
-    <!--</stat>-->
-    <!--<stat name="HTTPTransactions" label="Transactions">-->
-        <!--<metric label-xpath="proxy" value-xpath="tenSeconds" label-suffix="|Calls per Minute"  multiplier="60"-->
-                <!--metric-type="COLLECTIVE_OBSERVED_CURRENT" aggregate-label="Calls per Minute"/>-->
-    <!--</stat>-->
-    <!--<stat name="ConnectionsAccepted" label="Transactions">-->
-        <!--<metric value-xpath="tenSeconds" label="Connections Accepted" metric-type="COLLECTIVE_OBSERVED_CURRENT"/>-->
-    <!--</stat>-->
+    <stat name="SystemUsage" label="System" metric-type="COLLECTIVE_OBSERVED_CURRENT">
+        <metric value-xpath="Load" label="Load"/>
+        <metric value-xpath="WorkList" label="Work List"/>
+    </stat>
+    <stat name="MemoryStatus" label="System|Memory" metric-type="COLLECTIVE_OBSERVED_AVERAGE">
+        <metric value-xpath="Usage" label="Used %"/>
+        <metric value-xpath="TotalMemory" label="Total (MB)" multiplier="0.0009765625"/>
+        <metric value-xpath="UsedMemory" label="Used (MB)" multiplier="0.0009765625"/>
+        <metric value-xpath="FreeMemory" label="Free (MB)" multiplier="0.0009765625"/>
+        <metric value-xpath="ReqMemory" label="Requested (MB)" multiplier="0.0009765625"/>
+    </stat>
+    <stat name="FilesystemStatus" label="System|File System" metric-type="COLLECTIVE_OBSERVED_AVERAGE">
+        <metric value-xpath="FreeEncrypted" label="Free Encrypted (MB)"/>
+        <metric value-xpath="TotalEncrypted" label="Total Encrypted (MB)"/>
+        <metric value-xpath="FreeTemporary" label="Free Temporary (MB)"/>
+        <metric value-xpath="TotalTemporary" label="Total Temporary (MB)"/>
+        <metric value-xpath="FreeInternal" label="Free Internal (MB)"/>
+        <metric value-xpath="TotalInternal" label="Total Internal (MB)"/>
+    </stat>
+    <stat name="ReceiveKbpsThroughput" label="Network">
+        <metric label-xpath="Interface" value-xpath="tenSeconds" label-suffix="|Incoming KB/sec"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Total Incoming KB/sec"/>
+    </stat>
+    <stat name="TransmitKbpsThroughput" label="Network">
+        <metric label-xpath="Interface" value-xpath="tenSeconds" label-suffix="|Outgoing KB/sec"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Total Outgoing KB/sec"/>
+    </stat>
+    <stat name="NetworkReceivePacketThroughput" label="Network">
+        <metric label-xpath="InterfaceName" value-xpath="tenSeconds" label-suffix="|Incoming Packets/sec"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Total Incoming Packets/sec"/>
+    </stat>
+    <stat name="NetworkTransmitPacketThroughput" label="Network">
+        <metric label-xpath="InterfaceName" value-xpath="tenSeconds" label-suffix="|Outgoing Packets/sec"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Total Outgoing Packets/sec"/>
+    </stat>
+    <stat name="HTTPMeanTransactionTime" label="Transactions">
+        <metric label-xpath="proxy" value-xpath="tenSeconds" label-suffix="|Average Response Time (ms)"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Average Response Time (ms)" aggregation-type="AVERAGE"/>
+    </stat>
+    <stat name="HTTPTransactions" label="Transactions">
+        <metric label-xpath="proxy" value-xpath="tenSeconds" label-suffix="|Calls per Minute"  multiplier="60"
+                metric-type="COLLECTIVE_OBSERVED_CURRENT" aggregate-label="Calls per Minute"/>
+    </stat>
+    <stat name="ConnectionsAccepted" label="Transactions">
+        <metric value-xpath="tenSeconds" label="Connections Accepted" metric-type="COLLECTIVE_OBSERVED_CURRENT"/>
+    </stat>
 </stats>

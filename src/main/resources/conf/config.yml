@@ -30,8 +30,7 @@ numberOfThreads: 5
 connection:
   readTimeout: 2000
   socketTimeout: 2000
-  sslCertCheckEnabled: false
-  sslProtocols: TLSv1.2
+  sslProtocol: TLSv1.2
 
 #proxy:
 #  uri: http://localhost:9090
