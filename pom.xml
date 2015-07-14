@@ -4,7 +4,7 @@
 
     <groupId>com.appdynamics.extensions</groupId>
     <artifactId>datapower-monitoring-extension</artifactId>
-    <version>1.2.5</version>
+    <version>1.2.6</version>
     <packaging>jar</packaging>
 
     <name>datapower-monitoring-extension</name>
@@ -20,6 +20,11 @@
             <groupId>com.appdynamics</groupId>
             <artifactId>appd-exts-commons</artifactId>
             <version>1.2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
