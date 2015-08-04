@@ -150,7 +150,7 @@ public class DataPowerMonitor extends AManagedMonitor {
                 List<Map> servers = (List) config.get("servers");
                 if (servers != null && !servers.isEmpty()) {
                     for (Map server : servers) {
-                        DataPowerMonitorTask task = createTask(server);
+                        MetricFetcher task = createTask(server);
                         executorService.execute(task);
                     }
                 } else {
@@ -170,8 +170,19 @@ public class DataPowerMonitor extends AManagedMonitor {
         return new TaskOutput("DataPower Monitor Completed");
     }
 
-    private DataPowerMonitorTask createTask(Map server) {
-        return new DataPowerMonitorTask.Builder()
+    private boolean useBulkApi(Map server) {
+        Boolean useLegacyBulkApi = (Boolean) server.get("useBulkApi");
+        boolean useBulkApi;
+        if (Boolean.TRUE.equals(useLegacyBulkApi)) {
+            useBulkApi = true;
+        } else {
+            useBulkApi = false;
+        }
+        return useBulkApi;
+    }
+
+    protected MetricFetcher createTask(Map server) {
+        return new MetricFetcher.Builder(useBulkApi(server))
                 .server(server)
                 .metricPrefix(metricPrefix)
                 .metricConfig(metricConfig)
@@ -181,7 +192,7 @@ public class DataPowerMonitor extends AManagedMonitor {
                 .build();
     }
 
-    private Stat[] getStatsInfo(File file) {
+    protected Stat[] getStatsInfo(File file) {
         if (file.exists()) {
             try {
                 return readStatsInfoFile(new FileInputStream(file));
@@ -192,7 +203,7 @@ public class DataPowerMonitor extends AManagedMonitor {
         return null;
     }
 
-    private Stat[] readStatsInfoFile(InputStream inputStream) {
+    protected Stat[] readStatsInfoFile(InputStream inputStream) {
         try {
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
             Stat.Stats stats = (Stat.Stats) unmarshaller.unmarshal(inputStream);

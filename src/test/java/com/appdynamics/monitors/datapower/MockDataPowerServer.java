@@ -72,7 +72,7 @@ public class MockDataPowerServer {
     public static void startServerSSL() throws Exception {
         SslContextFactory factory = new SslContextFactory();
 //        factory.setProtocol("TLSv1.2");
-        factory.setIncludeProtocols("TLSv1.2");
+//        factory.setIncludeProtocols("TLSv1.2");
 //        factory.setExcludeProtocols("TLSv1.1","TLSv1.0");
         factory.setKeyStoreResource(Resource.newClassPathResource("/keystore/keystore.jks"));
         factory.setKeyStorePassword("changeit");
@@ -123,7 +123,12 @@ public class MockDataPowerServer {
             Matcher matcher = Pattern.compile("class=\"(\\w+)\"").matcher(inXml);
             if (matcher.find()) {
                 String operation = matcher.group(1);
-                String file = "/output/" + operation + ".xml";
+                String file;
+                if(operation.equals("DomainStatus")){
+                    file = "/output/" + operation + ".xml";
+                } else{
+                    file = "/output/BulkResponse.xml";
+                }
                 InputStream in = getClass().getResourceAsStream(file);
                 if (in != null) {
                     ServletOutputStream out = response.getOutputStream();

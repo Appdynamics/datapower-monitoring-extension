@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+    <env:Body>
+        <dp:response xmlns:dp="http://www.datapower.com/schemas/management">
+            <dp:timestamp>2015-07-23T12:31:16Z</dp:timestamp>
+            <dp:status>
+                <CPUUsage xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                    <tenSeconds>10</tenSeconds>
+                    <oneMinute>9</oneMinute>
+                    <tenMinutes>9</tenMinutes>
+                    <oneHour>9</oneHour>
+                    <oneDay>9</oneDay>
+                </CPUUsage>
+            </dp:status>
+        </dp:response>
+    </env:Body>
+</env:Envelope>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+<env:Body>
+    <dp:response xmlns:dp="http://www.datapower.com/schemas/management">
+        <dp:timestamp>2015-07-23T12:31:16Z</dp:timestamp>
+        <dp:status>
+            <MemoryStatus xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Usage>20</Usage>
+                <TotalMemory>18349614</TotalMemory>
+                <UsedMemory>3809817</UsedMemory>
+                <FreeMemory>14539797</FreeMemory>
+                <ReqMemory>14922000</ReqMemory>
+                <HoldMemory>11112183</HoldMemory>
+                <ReservedMemory>6116538</ReservedMemory>
+                <InstalledMemory>24466152</InstalledMemory>
+            </MemoryStatus>
+        </dp:status>
+    </dp:response>
+</env:Body>
+</env:Envelope><env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+<env:Body>
+    <dp:response xmlns:dp="http://www.datapower.com/schemas/management">
+        <dp:timestamp>2015-07-23T12:31:16Z</dp:timestamp>
+        <dp:status>
+            <ReceiveKbpsThroughput xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Interface>(illegal)</Interface>
+                <tenSeconds>996</tenSeconds>
+                <oneMinute>817</oneMinute>
+                <tenMinutes>832</tenMinutes>
+                <oneHour>791</oneHour>
+                <oneDay>912</oneDay>
+            </ReceiveKbpsThroughput>
+            <ReceiveKbpsThroughput xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Interface>mgt0</Interface>
+                <tenSeconds>78</tenSeconds>
+                <oneMinute>42</oneMinute>
+                <tenMinutes>41</tenMinutes>
+                <oneHour>41</oneHour>
+                <oneDay>41</oneDay>
+            </ReceiveKbpsThroughput>
+            <ReceiveKbpsThroughput xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Interface>eth10</Interface>
+                <tenSeconds>0</tenSeconds>
+                <oneMinute>0</oneMinute>
+                <tenMinutes>0</tenMinutes>
+                <oneHour>0</oneHour>
+                <oneDay>0</oneDay>
+            </ReceiveKbpsThroughput>
+            <ReceiveKbpsThroughput xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Interface>mgt1</Interface>
+                <tenSeconds>0</tenSeconds>
+                <oneMinute>0</oneMinute>
+                <tenMinutes>0</tenMinutes>
+                <oneHour>0</oneHour>
+                <oneDay>0</oneDay>
+            </ReceiveKbpsThroughput>
+            <ReceiveKbpsThroughput xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Interface>eth11</Interface>
+                <tenSeconds>0</tenSeconds>
+                <oneMinute>0</oneMinute>
+                <tenMinutes>0</tenMinutes>
+                <oneHour>0</oneHour>
+                <oneDay>0</oneDay>
+            </ReceiveKbpsThroughput>
+            <ReceiveKbpsThroughput xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Interface>eth12</Interface>
+                <tenSeconds>0</tenSeconds>
+                <oneMinute>0</oneMinute>
+                <tenMinutes>0</tenMinutes>
+                <oneHour>0</oneHour>
+                <oneDay>0</oneDay>
+            </ReceiveKbpsThroughput>
+            <ReceiveKbpsThroughput xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Interface>eth13</Interface>
+                <tenSeconds>0</tenSeconds>
+                <oneMinute>0</oneMinute>
+                <tenMinutes>0</tenMinutes>
+                <oneHour>0</oneHour>
+                <oneDay>0</oneDay>
+            </ReceiveKbpsThroughput>
+            <ReceiveKbpsThroughput xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Interface>eth20</Interface>
+                <tenSeconds>294</tenSeconds>
+                <oneMinute>340</oneMinute>
+                <tenMinutes>449</tenMinutes>
+                <oneHour>415</oneHour>
+                <oneDay>567</oneDay>
+            </ReceiveKbpsThroughput>
+            <ReceiveKbpsThroughput xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Interface>eth21</Interface>
+                <tenSeconds>53</tenSeconds>
+                <oneMinute>73</oneMinute>
+                <tenMinutes>71</tenMinutes>
+                <oneHour>65</oneHour>
+                <oneDay>89</oneDay>
+            </ReceiveKbpsThroughput>
+        </dp:status>
+    </dp:response>
+</env:Body>
+</env:Envelope>

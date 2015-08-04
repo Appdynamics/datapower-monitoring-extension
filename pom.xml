@@ -4,7 +4,7 @@
 
     <groupId>com.appdynamics.extensions</groupId>
     <artifactId>datapower-monitoring-extension</artifactId>
-    <version>1.2.6</version>
+    <version>1.2.8</version>
     <packaging>jar</packaging>
 
     <name>datapower-monitoring-extension</name>
@@ -123,7 +123,7 @@
                 <executions>
                     <execution>
                         <id>install</id>
-                        <phase>install</phase>
+                        <phase>package</phase>
                         <configuration>
                             <target>
                                 <property name="target.dir" value="${project.build.directory}/DataPowerMonitor"/>

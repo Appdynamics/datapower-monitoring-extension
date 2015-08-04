@@ -9,28 +9,30 @@ metricPrefix: Custom Metrics|DataPower
 servers:
   - uri: http://localhost:5550/service/mgmt/current
     displayName: server1
-    username: admin
+    username: user
     password: welcome
     domains:
       - default
       - domain1
+    useBulkApi: true
 
-#  - uri: https://someotherhost:5550/service/mgmt/current
-#    displayName: server2
-#    username: admin
-#    passwordEncrypted: C043Fag+LKEZM0AQTWPy2g==
-#    domainsRegex:
-#      - fin_domain.*
-#      - .*security.*
+  - uri: https://someotherhost:5550/service/mgmt/current
+    displayName: server2
+    username: user
+    passwordEncrypted: C043Fag+LKEZM0AQTWPy2g==
+    domainsRegex:
+      - fin_domain.*
+      - .*security.*
+    useBulkApi: true
 
 # number of concurrent tasks
 numberOfThreads: 5
-#encryptionKey: welcome
+encryptionKey: welcome
 
 connection:
   readTimeout: 2000
   socketTimeout: 2000
-  sslProtocol: TLSv1.2
+  sslProtocol: TLS
 
 #proxy:
 #  uri: http://localhost:9090
