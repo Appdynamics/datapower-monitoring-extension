@@ -30,8 +30,8 @@ numberOfThreads: 5
 encryptionKey: welcome
 
 connection:
-  readTimeout: 2000
   socketTimeout: 2000
+  connectTimeout: 2000
   sslProtocol: TLS
 
 #proxy:

@@ -15,8 +15,14 @@ public class Stat {
     private String name;
     @XmlAttribute
     private String label;
+    @XmlAttribute(name = "system-wide")
+    private String systemWide;
+    @XmlAttribute(name = "use-domain")
+    private String useDomain;
     @XmlElement(name = "metric")
     private Metric[] metrics;
+    @XmlElement(name = "filter")
+    private String[] filters;
 
     @XmlAttribute(name = "metric-type")
     private MetricType metricType;
@@ -51,6 +57,30 @@ public class Stat {
 
     public void setMetricType(MetricType metricType) {
         this.metricType = metricType;
+    }
+
+    public String getSystemWide() {
+        return systemWide;
+    }
+
+    public void setSystemWide(String systemWide) {
+        this.systemWide = systemWide;
+    }
+
+    public String[] getFilters() {
+        return filters;
+    }
+
+    public void setFilters(String[] filters) {
+        this.filters = filters;
+    }
+
+    public String getUseDomain() {
+        return useDomain;
+    }
+
+    public void setUseDomain(String useDomain) {
+        this.useDomain = useDomain;
     }
 
     @XmlRootElement

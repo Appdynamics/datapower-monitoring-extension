@@ -1,0 +1,22 @@
+<stats>
+    <stat name="SystemUsage2Table" label="System|System Usage Detail" system-wide="true">
+        <metric label-xpath="TaskName" value-xpath="Load" label-suffix="|Load"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Load"/>
+        <metric label-xpath="TaskName" value-xpath="WorkList" label-suffix="|WorkList"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="WorkList"/>
+        <metric label-xpath="TaskName" value-xpath="CPU" label-suffix="|CPU"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="CPU"/>
+        <metric label-xpath="TaskName" value-xpath="Memory" label-suffix="|Memory"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Memory"/>
+        <metric label-xpath="TaskName" value-xpath="FileCount" label-suffix="|FileCount"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="FileCount"/>
+    </stat>
+    <stat name="NetworkReceivePacketThroughput" label="Network">
+        <metric label-xpath="InterfaceName" value-xpath="tenSeconds" label-suffix="|Incoming Packets/sec"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Total Incoming Packets/sec"/>
+    </stat>
+    <stat name="NetworkTransmitPacketThroughput" label="Network">
+        <metric label-xpath="InterfaceName" value-xpath="tenSeconds" label-suffix="|Outgoing Packets/sec"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Total Outgoing Packets/sec"/>
+    </stat>
+</stats>

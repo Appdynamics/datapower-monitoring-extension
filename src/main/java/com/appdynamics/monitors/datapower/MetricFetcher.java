@@ -166,11 +166,30 @@ public abstract class MetricFetcher implements Runnable {
     }
 
     protected String getLabel(Xml xml, Metric metric) {
-        String label = "";
+        String label="";
         if (metric.getLabel() != null) {
             label = metric.getLabel();
         } else if (metric.getLabelXpath() != null) {
-            label = xml.getText(metric.getLabelXpath());
+            String labelXpath = metric.getLabelXpath();
+            String delim = StringUtils.hasText(metric.getLabelDelim()) ? metric.getLabelDelim() : "_";
+            if (labelXpath.contains(",")) {
+                String[] split = labelXpath.split(",");
+                StringBuilder sb = new StringBuilder();
+                for (String xpath : split) {
+                    String text = xml.getText(xpath);
+                    if (StringUtils.hasText(text)) {
+                        sb.append(text).append(delim);
+                    } else {
+                        logger.warn("The xpath {} to get the label returned nothing", xpath);
+                    }
+                }
+                if (sb.length() > 0) {
+                    sb.deleteCharAt(sb.length() - 1);
+                }
+                label = sb.toString();
+            } else {
+                label = xml.getText(metric.getLabelXpath());
+            }
         }
         if (metric.getLabelPrefix() != null) {
             label = metric.getLabelPrefix() + label;
@@ -266,14 +285,16 @@ public abstract class MetricFetcher implements Runnable {
         Aggregator<Metric> aggregator = new Aggregator<Metric>();
         for (Xml xml : response) {
             for (Metric metric : metrics) {
+                Map<String, String> converterMap = getConverterMap(metric);
                 String valueXpath = metric.getValueXpath();
                 if (StringUtils.hasText(valueXpath)) {
                     String value = xml.getText(valueXpath);
                     if (StringUtils.hasText(value)) {
+                        value = convertIfNeeded(value, converterMap, metric);
+                        value = multiply(value, metric.getMultiplier());
                         if (metric.getAggregateLabel() != null) {
                             aggregator.add(metric, value);
                         }
-                        value = multiply(value, metric.getMultiplier());
                         String label = getLabel(xml, metric);
                         if (StringUtils.hasText(label)) {
                             label = metricPrefix + "|" + StringUtils.trim(label, "|");
@@ -310,6 +331,54 @@ public abstract class MetricFetcher implements Runnable {
                     }
                 }
             }
+        }
+    }
+
+    protected Xml[] filter(String[] filters, Xml[] response) {
+        if (filters != null && filters.length > 0 && response != null && response.length > 0) {
+            Xml parentNode = response[0].getParent();
+            List<Xml> filtered = new ArrayList<Xml>();
+            for (String filter : filters) {
+                Xml xml = parentNode.getXmlFromXpath(filter);
+                if (xml != null) {
+                    filtered.add(xml);
+                } else {
+                    logger.warn("The filter {} didn't return any node", filter);
+                }
+            }
+            return filtered.toArray(new Xml[]{});
+        } else {
+            return response;
+        }
+    }
+
+    private String convertIfNeeded(String value, Map<String, String> converterMap, Metric metric) {
+        if (converterMap != null) {
+            String converted = converterMap.get(value);
+            if (StringUtils.hasText(converted)) {
+                return converted;
+            } else if (converterMap.containsKey("$default")) {
+                return converterMap.get("$default");
+            } else {
+                logger.error("For the {}, the converter map {} has no value for [{}]"
+                        , metric, converterMap, value);
+                return value;
+            }
+        }
+        return value;
+    }
+
+
+    private Map<String, String> getConverterMap(Metric metric) {
+        MetricConverter[] converters = metric.getConverters();
+        if (converters != null && converters.length > 0) {
+            Map<String, String> map = new HashMap<String, String>();
+            for (MetricConverter converter : converters) {
+                map.put(converter.getLabel(), converter.getValue());
+            }
+            return map;
+        } else {
+            return null;
         }
     }
 

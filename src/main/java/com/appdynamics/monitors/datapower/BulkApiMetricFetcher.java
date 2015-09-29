@@ -1,5 +1,6 @@
 package com.appdynamics.monitors.datapower;
 
+import com.appdynamics.extensions.StringUtils;
 import com.appdynamics.extensions.http.Response;
 import com.appdynamics.extensions.http.WebTarget;
 import com.appdynamics.extensions.xml.Xml;
@@ -7,10 +8,7 @@ import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by abey.tom on 5/12/15.
@@ -20,23 +18,64 @@ public class BulkApiMetricFetcher extends MetricFetcher {
 
     @Override
     protected void fetchMetrics(List<String> selectedDomains) {
-        Map<String, Stat> operationMap = new HashMap<String, Stat>();
+        Map<String, Stat> oprMap = new HashMap<String, Stat>();
+        Map<String, Stat> sysWidOprMap = new HashMap<String, Stat>();
         for (Stat stat : metricConf) {
             Metric[] metrics = stat.getMetrics();
             if (metrics != null && metrics.length > 0) {
-                operationMap.put(stat.getName(), stat);
+                if ("true".equals(stat.getSystemWide())) {
+                    sysWidOprMap.put(stat.getName(), stat);
+                } else {
+                    oprMap.put(stat.getName(), stat);
+                }
             }
         }
+        //Get Non system wide metrics for all of the domains
         for (String domain : selectedDomains) {
             String domainPrefix = metricPrefix + domain;
-            Map<String, Xml[]> responseMap = getResponse(operationMap.keySet(), domain);
-            for (String operation : responseMap.keySet()) {
-                Stat stat = operationMap.get(operation);
-                String statLabel = getStatLabel(domainPrefix, stat);
-                Xml[] response = responseMap.get(operation);
-                extractData(statLabel, stat.getMetrics(), response, stat);
-            }
+            getResponse(oprMap, domain, domainPrefix);
+        }
+        //Get the system wide operations any one of the domains
+        getResponseForSystemWide(sysWidOprMap, selectedDomains.get(0), StringUtils.trim(metricPrefix, "|"));
 
+    }
+
+    private void getResponseForSystemWide(Map<String, Stat> oprMap, String domain, String prefix) {
+        Map<String, Map<String, Stat>> domainStatMap = new HashMap<String, Map<String, Stat>>();
+        for (String opr : oprMap.keySet()) {
+            Stat stat = oprMap.get(opr);
+            String useDomain = stat.getUseDomain();
+            if (!StringUtils.hasText(useDomain)) {
+                useDomain = domain;
+            }
+            Map<String, Stat> statMap = domainStatMap.get(useDomain);
+            if (statMap == null) {
+                statMap = new HashMap<String, Stat>();
+                domainStatMap.put(useDomain, statMap);
+            }
+            statMap.put(opr, stat);
+        }
+        for (String dom : domainStatMap.keySet()) {
+            Map<String, Stat> statMap = domainStatMap.get(dom);
+            logger.info("Fetching the operations {} from domain [{}]", statMap.keySet(), dom);
+            getResponse(statMap, domain, prefix);
+        }
+    }
+
+    private void getResponse(Map<String, Stat> oprMap, String domain, String prefix) {
+        Map<String, Xml[]> responseMap = getResponse(oprMap.keySet(), domain);
+        if (responseMap != null) {
+            for (String operation : responseMap.keySet()) {
+                Stat stat = oprMap.get(operation);
+                if (stat != null) { // This null check is valid only for test cases
+                    String statLabel = getStatLabel(prefix, stat);
+                    Xml[] response = responseMap.get(operation);
+                    response = filter(stat.getFilters(), response);
+                    if (response != null && response.length > 0) {
+                        extractData(statLabel, stat.getMetrics(), response, stat);
+                    }
+                }
+            }
         }
     }
 

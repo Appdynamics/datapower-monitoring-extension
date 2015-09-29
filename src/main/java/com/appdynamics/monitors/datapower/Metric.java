@@ -6,6 +6,7 @@ import com.appdynamics.extensions.util.AggregationType;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import java.math.BigDecimal;
 
 /**
@@ -36,6 +37,9 @@ public class Metric {
     @XmlAttribute(name = "label-suffix")
     private String labelSuffix;
 
+    @XmlAttribute(name = "label-delim")
+    private String labelDelim;
+
     @XmlAttribute(name = "metric-type")
     private MetricType metricType;
 
@@ -44,6 +48,9 @@ public class Metric {
 
     @XmlAttribute(name = "aggregation-type")
     private AggregationType aggregationType;
+
+    @XmlElement(name = "converter")
+    private MetricConverter[] converters;
 
 
     public String getLabel() {
@@ -116,6 +123,22 @@ public class Metric {
 
     public void setAggregationType(AggregationType aggregationType) {
         this.aggregationType = aggregationType;
+    }
+
+    public MetricConverter[] getConverters() {
+        return converters;
+    }
+
+    public void setConverters(MetricConverter[] converters) {
+        this.converters = converters;
+    }
+
+    public String getLabelDelim() {
+        return labelDelim;
+    }
+
+    public void setLabelDelim(String labelDelim) {
+        this.labelDelim = labelDelim;
     }
 
     @Override

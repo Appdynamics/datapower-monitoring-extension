@@ -1,5 +1,6 @@
 package com.appdynamics.monitors.datapower;
 
+import com.appdynamics.extensions.StringUtils;
 import com.appdynamics.extensions.xml.Xml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,15 +18,33 @@ public class DataPowerMonitorTask extends MetricFetcher {
         for (String domain : selectedDomains) {
             String domainPrefix = metricPrefix + domain;
             for (Stat stat : metricConf) {
-                String statLabel = getStatLabel(domainPrefix, stat);
-                String operation = stat.getName();
-                Metric[] metrics = stat.getMetrics();
-                if (metrics != null && metrics.length > 0) {
-                    Xml[] response = getResponse(operation, domain);
-                    if (response != null) {
-                        extractData(statLabel, metrics, response, stat);
-                    }
+                if (!"true".equals(stat.getSystemWide())) {
+                    fetchMetrics(domain, domainPrefix, stat);
                 }
+            }
+        }
+        String domain = selectedDomains.get(0);
+        String prefix = StringUtils.trim(metricPrefix, "|");
+        for (Stat stat : metricConf) {
+            if ("true".equals(stat.getSystemWide())) {
+                if(StringUtils.hasText(stat.getUseDomain())){
+                    fetchMetrics(stat.getUseDomain(),prefix,stat);
+                } else{
+                    fetchMetrics(domain, prefix, stat);
+                }
+            }
+        }
+    }
+
+    private void fetchMetrics(String domain, String prefix, Stat stat) {
+        String statLabel = getStatLabel(prefix, stat);
+        String operation = stat.getName();
+        Metric[] metrics = stat.getMetrics();
+        if (metrics != null && metrics.length > 0) {
+            Xml[] response = getResponse(operation, domain);
+            response = filter(stat.getFilters(),response);
+            if (response != null) {
+                extractData(statLabel, metrics, response, stat);
             }
         }
     }

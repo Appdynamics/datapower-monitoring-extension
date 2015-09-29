@@ -1,0 +1,14 @@
+<stats>
+    <stat name="ObjectStatus" label="Object Status">
+        <metric label-xpath="Class,Name" label-delim="|"
+                value-xpath="OpState"
+                label-suffix="|State" metric-type="COLLECTIVE_OBSERVED_CURRENT">
+            <converter label="up" value="1"/>
+            <converter label="$default" value="0"/>
+        </metric>
+        <filter>//ObjectStatus[Class='HTTPSourceProtocolHandler' and Name='NBNCoMultiProtocolGateway']</filter>
+        <filter>//ObjectStatus[Class='HTTPSourceProtocolHandler' and Name='AMQ']</filter>
+        <filter>//ObjectStatus[Class='MultiProtocolGateway' and Name='NBNCoMultiProtocolGateway']</filter>
+        <filter>//ObjectStatus[Class='MQSourceProtocolHandler' and Name='IB2B.B2B.MANAGE_ACTIVATION.V1.OUTPUT']</filter>
+    </stat>
+</stats>

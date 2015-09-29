@@ -121,6 +121,11 @@ public class MockDataPowerServer {
             logger.info("Serving a connection {}", target);
             String inXml = IOUtils.toString(request.getInputStream(), "UTF-8");
             Matcher matcher = Pattern.compile("class=\"(\\w+)\"").matcher(inXml);
+            try {
+                Thread.sleep(4000L);
+            } catch (InterruptedException e) {
+                logger.error("", e);
+            }
             if (matcher.find()) {
                 String operation = matcher.group(1);
                 String file;

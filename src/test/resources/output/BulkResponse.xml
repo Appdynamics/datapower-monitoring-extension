@@ -114,3 +114,80 @@
     </dp:response>
 </env:Body>
 </env:Envelope>
+<dp:response xmlns:dp="http://www.datapower.com/schemas/management">
+<dp:timestamp>2015-08-05T14:26:54+10:00</dp:timestamp>
+<dp:status>
+    <SystemUsage2Table xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+        <TaskID>1</TaskID>
+        <TaskName>main</TaskName>
+        <Load>6</Load>
+        <WorkList>3</WorkList>
+        <CPU>0</CPU>
+        <Memory>2</Memory>
+        <FileCount>213</FileCount>
+    </SystemUsage2Table>
+    <SystemUsage2Table xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+        <TaskID>2</TaskID>
+        <TaskName>b2bp</TaskName>
+        <Load>0</Load>
+        <WorkList>0</WorkList>
+        <CPU>0</CPU>
+        <Memory>0</Memory>
+        <FileCount>28</FileCount>
+    </SystemUsage2Table>
+</dp:status>
+</dp:response>
+<env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/">
+<env:Body>
+    <dp:response xmlns:dp="http://www.datapower.com/schemas/management">
+        <dp:timestamp>2013-08-03T08:10:21Z</dp:timestamp>
+        <dp:status>
+            <ObjectStatus xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Class>HTTPSourceProtocolHandler</Class>
+                <OpState>up</OpState>
+                <AdminState>enabled</AdminState>
+                <Name>AMQ</Name>
+                <EventCode>0x00000000</EventCode>
+                <ErrorCode/>
+                <ConfigState>saved</ConfigState>
+            </ObjectStatus>
+            <ObjectStatus xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Class>HTTPSourceProtocolHandler</Class>
+                <OpState>up</OpState>
+                <AdminState>enabled</AdminState>
+                <Name>NBNCoMultiProtocolGateway</Name>
+                <EventCode>0x00000000</EventCode>
+                <ErrorCode/>
+                <ConfigState>saved</ConfigState>
+            </ObjectStatus>
+            <ObjectStatus xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Class>B2BCPACollaboration</Class>
+                <OpState>up</OpState>
+                <AdminState>enabled</AdminState>
+                <Name>IBMTEST01-NBNCO-NE2E-0007-Manage_Address_Batch_Business_Process--NBNCo-w-IBMTEST01</Name>
+                <EventCode>0x00000000</EventCode>
+                <ErrorCode/>
+                <ConfigState>saved</ConfigState>
+            </ObjectStatus>
+            <ObjectStatus xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Class>B2BCPACollaboration</Class>
+                <OpState>up</OpState>
+                <AdminState>enabled</AdminState>
+                <Name>IBMTEST01-NBNCO-NE2E-0007-Manage_Address_Business_Process--NBNCo-w-IBMTEST01</Name>
+                <EventCode>0x00000000</EventCode>
+                <ErrorCode/>
+                <ConfigState>saved</ConfigState>
+            </ObjectStatus>
+            <ObjectStatus xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                <Class>B2BCPACollaboration</Class>
+                <OpState>up</OpState>
+                <AdminState>enabled</AdminState>
+                <Name>IBMTEST01-NBNCO-NE2E-0007-Manage_Appointment_Business_Process--NBNCo-w-IBMTEST01</Name>
+                <EventCode>0x00000000</EventCode>
+                <ErrorCode/>
+                <ConfigState>saved</ConfigState>
+            </ObjectStatus>
+        </dp:status>
+    </dp:response>
+</env:Body>
+</env:Envelope>

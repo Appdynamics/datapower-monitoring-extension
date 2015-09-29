@@ -1,19 +1,19 @@
 <stats>
-    <stat name="CPUUsage" label="System">
+    <stat name="CPUUsage" label="System" system-wide="true" use-domain="default">
         <metric value-xpath="tenSeconds" label="CPU Usage %" metric-type="COLLECTIVE_OBSERVED_AVERAGE"/>
     </stat>
-    <stat name="SystemUsage" label="System" metric-type="COLLECTIVE_OBSERVED_CURRENT">
+    <stat name="SystemUsage" label="System" metric-type="COLLECTIVE_OBSERVED_CURRENT" system-wide="true">
         <metric value-xpath="Load" label="Load"/>
         <metric value-xpath="WorkList" label="Work List"/>
     </stat>
-    <stat name="MemoryStatus" label="System|Memory" metric-type="COLLECTIVE_OBSERVED_AVERAGE">
+    <stat name="MemoryStatus" label="System|Memory" metric-type="COLLECTIVE_OBSERVED_AVERAGE" system-wide="true">
         <metric value-xpath="Usage" label="Used %"/>
         <metric value-xpath="TotalMemory" label="Total (MB)" multiplier="0.0009765625"/>
         <metric value-xpath="UsedMemory" label="Used (MB)" multiplier="0.0009765625"/>
         <metric value-xpath="FreeMemory" label="Free (MB)" multiplier="0.0009765625"/>
         <metric value-xpath="ReqMemory" label="Requested (MB)" multiplier="0.0009765625"/>
     </stat>
-    <stat name="FilesystemStatus" label="System|File System" metric-type="COLLECTIVE_OBSERVED_AVERAGE">
+    <stat name="FilesystemStatus" label="System|File System" metric-type="COLLECTIVE_OBSERVED_AVERAGE" system-wide="true">
         <metric value-xpath="FreeEncrypted" label="Free Encrypted (MB)"/>
         <metric value-xpath="TotalEncrypted" label="Total Encrypted (MB)"/>
         <metric value-xpath="FreeTemporary" label="Free Temporary (MB)"/>
@@ -47,5 +47,30 @@
     </stat>
     <stat name="ConnectionsAccepted" label="Transactions">
         <metric value-xpath="tenSeconds" label="Connections Accepted" metric-type="COLLECTIVE_OBSERVED_CURRENT"/>
+    </stat>
+
+    <stat name="SystemUsage2Table" label="System|System Usage Detail" system-wide="true">
+        <metric label-xpath="TaskName" value-xpath="Load" label-suffix="|Load"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE"/>
+        <metric label-xpath="TaskName" value-xpath="WorkList" label-suffix="|WorkList"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE"/>
+        <metric label-xpath="TaskName" value-xpath="CPU" label-suffix="|CPU"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE"/>
+        <metric label-xpath="TaskName" value-xpath="Memory" label-suffix="|Memory"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" />
+        <metric label-xpath="TaskName" value-xpath="FileCount" label-suffix="|FileCount"
+                metric-type="COLLECTIVE_OBSERVED_AVERAGE" />
+    </stat>
+    <stat name="ObjectStatus" label="Object Status">
+        <metric label-xpath="Class,Name" label-delim="|"
+                value-xpath="OpState"
+                label-suffix="|State" metric-type="COLLECTIVE_OBSERVED_CURRENT">
+            <converter label="up" value="1"/>
+            <converter label="$default" value="0"/>
+        </metric>
+        <filter>//ObjectStatus[Class='HTTPSourceProtocolHandler' and Name='NBNCoMultiProtocolGateway']</filter>
+        <filter>//ObjectStatus[Class='HTTPSourceProtocolHandler' and Name='AMQ']</filter>
+        <filter>//ObjectStatus[Class='MultiProtocolGateway' and Name='NBNCoMultiProtocolGateway']</filter>
+        <filter>//ObjectStatus[Class='MQSourceProtocolHandler' and Name='IB2B.B2B.MANAGE_ACTIVATION.V1.OUTPUT']</filter>
     </stat>
 </stats>
