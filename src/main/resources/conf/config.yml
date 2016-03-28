@@ -32,7 +32,9 @@ encryptionKey: welcome
 connection:
   socketTimeout: 2000
   connectTimeout: 2000
-  sslProtocol: TLS
+  sslCertCheckEnabled: false
+  sslVerifyHostname: false
+  sslProtocols: ["TLSv1"]
 
 #proxy:
 #  uri: http://localhost:9090

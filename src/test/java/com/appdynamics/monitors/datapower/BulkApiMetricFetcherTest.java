@@ -1,5 +1,7 @@
 package com.appdynamics.monitors.datapower;
 
+import com.appdynamics.extensions.conf.MonitorConfiguration;
+import com.appdynamics.extensions.util.MetricWriteHelper;
 import com.appdynamics.extensions.xml.Xml;
 import com.appdynamics.extensions.yml.YmlReader;
 import com.appdynamics.monitors.util.SoapMessageUtil;
@@ -30,17 +32,21 @@ public class BulkApiMetricFetcherTest {
         final SoapMessageUtil soapMessageUtil = new SoapMessageUtil();
         //Read the YAML and metrics.xml
         Map<String, ?> config = YmlReader.readFromFileAsMap(new File(getClass().getResource("/conf/config.yml").getFile()));
-        Stat[] metricConfig = monitor.readStatsInfoFile(getClass().getResourceAsStream("/conf/metrics.xml"));
+
+        Stat[] metricConfig = null;
+//                monitor.readStatsInfoFile(getClass().getResourceAsStream("/conf/metrics.xml"));
         Map server = new HashMap();
         server.put("uri", "http://localhost:5550/service/mgmt/current");
         server.put("domains", Arrays.asList("domain1","domain2"));
 
+        MonitorConfiguration c = new MonitorConfiguration("Custom Metrics|X|");
+        c.setConfigYml("src/main/resources/conf/config.yml");
+        c.setMetricWriter(Mockito.mock(MetricWriteHelper.class));
+        //c.setMetricsXml("/metrics/test-metrics.xml",Stat.Stats.class);
         //Create the Task with builder
         BulkApiMetricFetcher original = (BulkApiMetricFetcher) new MetricFetcher.Builder(true)
                 .server(server)
-                .metricPrefix("Custom Metrics|X|")
-                .metricConfig(metricConfig)
-                .config(config)
+                .configuration(c)
                 .soapMessageUtil(soapMessageUtil)
                 .metricWriter(monitor)
                 .build();

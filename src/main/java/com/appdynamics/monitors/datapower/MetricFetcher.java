@@ -1,20 +1,24 @@
 package com.appdynamics.monitors.datapower;
 
-import com.appdynamics.TaskInputArgs;
 import com.appdynamics.extensions.StringUtils;
-import com.appdynamics.extensions.http.Response;
-import com.appdynamics.extensions.http.SimpleHttpClient;
-import com.appdynamics.extensions.http.SimpleHttpClientBuilder;
-import com.appdynamics.extensions.http.WebTarget;
+import com.appdynamics.extensions.conf.MonitorConfiguration;
+import com.appdynamics.extensions.http.UrlBuilder;
 import com.appdynamics.extensions.util.AggregatedValue;
 import com.appdynamics.extensions.util.AggregationType;
 import com.appdynamics.extensions.util.Aggregator;
 import com.appdynamics.extensions.xml.Xml;
 import com.appdynamics.monitors.util.SoapMessageUtil;
 import com.google.common.base.Strings;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -26,27 +30,26 @@ public abstract class MetricFetcher implements Runnable {
     public static final Logger logger = LoggerFactory.getLogger(MetricFetcher.class);
 
     protected Map server;
-    protected String metricPrefix;
-    protected Stat[] metricConf;
-    protected Map<String, ?> config;
     protected SoapMessageUtil soapMessageUtil;
+    protected MonitorConfiguration configuration;
     protected DataPowerMonitor metricPrinter;
-    protected SimpleHttpClient httpClient;
 
     public void run() {
         long time = System.currentTimeMillis();
         String uri = (String) server.get("uri");
         try {
             if (!Strings.isNullOrEmpty(uri)) {
-                httpClient = buildHttpClient();
                 String displayName = (String) server.get("displayName");
+                String serverPrefix;
                 if (!Strings.isNullOrEmpty(displayName)) {
-                    metricPrefix = metricPrefix + displayName + "|";
+                    serverPrefix = configuration.getMetricPrefix() + "|" + displayName + "|";
+                } else {
+                    serverPrefix = configuration.getMetricPrefix() + "|";
                 }
-                logger.debug("Fetching metrics for the server uri [{}], metricPrefix =[{}]", uri, metricPrefix);
+                logger.debug("Fetching metrics for the server uri [{}], metricPrefix =[{}]", uri, serverPrefix);
                 List<String> selectedDomains = getSelectedDomains();
                 if (!selectedDomains.isEmpty()) {
-                    fetchMetrics(selectedDomains);
+                    fetchMetrics(selectedDomains, serverPrefix);
                 } else {
                     logger.error("Cannot match/filter the domains based on the properties 'domains-regex' or 'domains'");
                 }
@@ -54,12 +57,9 @@ public abstract class MetricFetcher implements Runnable {
                 logger.error("The url is empty for the server {}", server);
             }
         } catch (Exception e) {
-            logger.error("Exception while running the DataPower task in the server " + uri, e);
-        } finally {
-            if (httpClient != null) {
-                logger.debug("Closing the http connection {}", httpClient);
-                httpClient.close();
-            }
+            String msg = "Exception while running the DataPower task in the server " + uri;
+            logger.error(msg, e);
+            configuration.getMetricWriter().registerError(msg, e);
         }
         if (logger.isDebugEnabled()) {
             logger.debug("Time taken to run the [{}] on server [{}] is {} ms"
@@ -67,81 +67,16 @@ public abstract class MetricFetcher implements Runnable {
         }
     }
 
-    protected SimpleHttpClient buildHttpClient() {
-
-        HashMap<String, String> argsMap = new HashMap<String, String>();
-        argsMap.put(TaskInputArgs.URI, (String) server.get("uri"));
-        String username = (String) server.get("username");
-        if (username != null) {
-            argsMap.put(TaskInputArgs.USER, username);
+    protected Stat[] getStats() {
+        Stat.Stats wrapper = (Stat.Stats) this.configuration.getMetricsXmlConfiguration();
+        if (wrapper != null) {
+            return wrapper.getStats();
+        } else {
+            return null;
         }
-        String password = (String) server.get("password");
-        if (password != null) {
-            argsMap.put(TaskInputArgs.PASSWORD, password);
-        }
-        String passwordEncrypted = (String) server.get("passwordEncrypted");
-        if (passwordEncrypted != null) {
-            argsMap.put(TaskInputArgs.PASSWORD_ENCRYPTED, passwordEncrypted);
-            argsMap.put(TaskInputArgs.ENCRYPTION_KEY, (String) config.get("encryptionKey"));
-        }
-        SimpleHttpClientBuilder builder = new SimpleHttpClientBuilder();
-
-        Map connection = (Map) config.get("connection");
-        if (connection != null) {
-            Integer socketTimeout = (Integer) connection.get("socketTimeout");
-            if (socketTimeout == null) {
-                socketTimeout = 5000;
-            }
-            Integer connectTimeout = (Integer) connection.get("connectTimeout");
-            if (connectTimeout == null) {
-                connectTimeout = 5000;
-            }
-            builder.socketTimeout(socketTimeout).connectionTimeout(connectTimeout);
-            String sslProtocol = (String) connection.get("sslProtocol");
-            if (sslProtocol != null) {
-                argsMap.put("ssl-protocol", sslProtocol);
-            }
-            logger.debug("Setting the connect timeout to {} and socket timeout to {}", connectTimeout, socketTimeout);
-        }
-        Map<String, String> proxy = (Map<String, String>) config.get("proxy");
-        if (proxy != null) {
-            String uri = proxy.get("uri");
-            if (uri != null) {
-                argsMap.put(TaskInputArgs.PROXY_URI, uri);
-            }
-
-            String proxyUser = proxy.get("username");
-            if (proxyUser != null) {
-                argsMap.put(TaskInputArgs.PROXY_USER, proxyUser);
-            }
-
-            String proxyPassword = proxy.get("password");
-            if (proxyPassword != null) {
-                argsMap.put(TaskInputArgs.PROXY_PASSWORD, proxyPassword);
-            }
-        }
-        if (logger.isDebugEnabled()) {
-            StringBuilder sb = new StringBuilder();
-            for (String key : argsMap.keySet()) {
-                sb.append(key).append("=");
-                if (!key.toLowerCase().contains("password")) {
-                    sb.append(argsMap.get(key));
-                } else {
-                    sb.append("*********");
-                }
-                sb.append(",");
-            }
-            if (sb.length() > 0) {
-                sb.deleteCharAt(sb.length() - 1);
-            }
-            logger.debug("The task args for the http client are {}", sb);
-        }
-        builder.taskArgs(argsMap);
-        return builder.build();
     }
 
-
-    protected abstract void fetchMetrics(List<String> selectedDomains);
+    protected abstract void fetchMetrics(List<String> selectedDomains, String serverPrefix);
 
     protected MetricType getMetricType(Metric metric, Stat stat) {
         if (metric.getMetricType() != null) {
@@ -166,7 +101,7 @@ public abstract class MetricFetcher implements Runnable {
     }
 
     protected String getLabel(Xml xml, Metric metric) {
-        String label="";
+        String label = "";
         if (metric.getLabel() != null) {
             label = metric.getLabel();
         } else if (metric.getLabelXpath() != null) {
@@ -246,26 +181,34 @@ public abstract class MetricFetcher implements Runnable {
 
     protected Xml[] getResponse(String operation, String domain) {
         String soapMessage = soapMessageUtil.createSoapMessage(operation, domain);
-        WebTarget target = httpClient.target();
-        Response response = null;
+        String url = UrlBuilder.fromYmlServerConfig(server).build();
+        CloseableHttpResponse response = null;
         try {
-            logger.debug("The SOAP Request Generated for the domain={} and operation={} is payload={}"
-                    , domain, operation, soapMessage);
-            response = target.post(soapMessage);
-            if (response.getStatus() == 200) {
-                return soapMessageUtil.getSoapResponseBody(response.inputStream(), operation);
+            CloseableHttpClient httpClient = configuration.getHttpClient();
+            logger.debug("The SOAP Request Generated for the domain={} and operation={} is payload={} and url={}"
+                    , domain, operation, soapMessage, url);
+            HttpPost post = new HttpPost(url);
+            StringEntity entity = new StringEntity(soapMessage, ContentType.TEXT_XML);
+            post.setEntity(entity);
+            response = httpClient.execute(post);
+            if (response.getStatusLine().getStatusCode() == 200) {
+                return soapMessageUtil.getSoapResponseBody(response.getEntity().getContent(), operation);
             } else {
-                logger.error("Error while fetching the data from absolute url={}, url={} and payload={}"
-                        , target.getAbsoluteUrl(), target.getUrl(), soapMessage);
-                logger.error("The response is {}", response.string());
+                logger.error("Error while fetching the data from absolute url={} and payload={}"
+                        , url, soapMessage);
+                logger.error("The response is {}", EntityUtils.toString(response.getEntity()));
             }
         } catch (Exception e) {
-            logger.error("Error while fetching the data from absolute url={}, url={} and payload={}"
-                    , target.getAbsoluteUrl(), target.getUrl(), soapMessage);
-            logger.error("", e);
+            String msg = String.format("Error while fetching the data from url=[%s] and payload=[%s]",
+                    url, soapMessage);
+            logger.error(msg, e);
+            configuration.getMetricWriter().registerError(msg, e);
         } finally {
             if (response != null) {
-                response.close();
+                try {
+                    response.close();
+                } catch (IOException e) {
+                }
             }
         }
         return new Xml[0];
@@ -398,39 +341,23 @@ public abstract class MetricFetcher implements Runnable {
             return this;
         }
 
-        public Builder metricPrefix(String metricPrefix) {
-            task.metricPrefix = metricPrefix;
-            return this;
-        }
-
-
-        public Builder metricConfig(Stat[] metricConfig) {
-            task.metricConf = metricConfig;
-            return this;
-        }
-
-        public Builder config(Map<String, ?> config) {
-            task.config = config;
-            return this;
-        }
-
         public Builder soapMessageUtil(SoapMessageUtil soapMessageUtil) {
             task.soapMessageUtil = soapMessageUtil;
             return this;
         }
 
-        public Builder metricWriter(DataPowerMonitor dataPowerMonitor) {
-            task.metricPrinter = dataPowerMonitor;
-            return this;
-        }
-
-        public Builder httpClient(SimpleHttpClient httpClient) {
-            task.httpClient = httpClient;
+        public Builder configuration(MonitorConfiguration configuration) {
+            task.configuration = configuration;
             return this;
         }
 
         public MetricFetcher build() {
             return task;
+        }
+
+        public Builder metricWriter(DataPowerMonitor dataPowerMonitor) {
+            task.metricPrinter = dataPowerMonitor;
+            return this;
         }
     }
 }

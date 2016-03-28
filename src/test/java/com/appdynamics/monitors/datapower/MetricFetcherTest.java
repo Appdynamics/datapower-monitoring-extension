@@ -1,5 +1,7 @@
 package com.appdynamics.monitors.datapower;
 
+import com.appdynamics.extensions.conf.MonitorConfiguration;
+import com.appdynamics.extensions.util.MetricWriteHelper;
 import com.appdynamics.extensions.yml.YmlReader;
 import com.appdynamics.monitors.util.SoapMessageUtil;
 import com.appdynamics.monitors.util.TestHelper;
@@ -63,16 +65,19 @@ public class MetricFetcherTest {
         final SoapMessageUtil soapMessageUtil = new SoapMessageUtil();
         //Read the YAML and metrics.xml
         Map<String, ?> config = YmlReader.readFromFileAsMap(new File(getClass().getResource("/conf/config.yml").getFile()));
-        Stat[] metricConfig = monitor.readStatsInfoFile(getClass().getResourceAsStream("/metrics/test-metrics.xml"));
+        Stat[] metricConfig = null;
+                //monitor.readStatsInfoFile(getClass().getResourceAsStream("/metrics/test-metrics.xml"));
 
+        MonitorConfiguration c = new MonitorConfiguration("Custom Metrics|X|");
+        c.setConfigYml("src/main/resources/conf/config.yml");
+        c.setMetricsXml("src/test/resources/metrics/test-metrics.xml",Stat.Stats.class);
+        c.setMetricWriter(Mockito.mock(MetricWriteHelper.class));
         //Create the Task with builder
         DataPowerMonitorTask original = (DataPowerMonitorTask) new MetricFetcher.Builder(false)
                 .server(Collections.singletonMap("uri", "http://localhost:5550/service/mgmt/current"))
-                .metricPrefix("Custom Metrics|X|")
-                .metricConfig(metricConfig)
-                .config(config)
+                .configuration(c)
                 .soapMessageUtil(soapMessageUtil)
-                .metricWriter(monitor)
+                .metricWriter(Mockito.mock(DataPowerMonitor.class))
                 .build();
         DataPowerMonitorTask fetcher = Mockito.spy(original);
 
@@ -84,7 +89,7 @@ public class MetricFetcherTest {
                         operation);
             }
         }).when(fetcher).getResponse(Mockito.anyString(), Mockito.anyString());
-        fetcher.fetchMetrics(Arrays.asList("default"));
+        fetcher.fetchMetrics(Arrays.asList("default"), c.getMetricPrefix()+"|");
     }
 
     @Test
@@ -93,16 +98,18 @@ public class MetricFetcherTest {
         final SoapMessageUtil soapMessageUtil = new SoapMessageUtil();
         //Read the YAML and metrics.xml
         Map<String, ?> config = YmlReader.readFromFileAsMap(new File(getClass().getResource("/conf/config.yml").getFile()));
-        Stat[] metricConfig = monitor.readStatsInfoFile(getClass().getResourceAsStream("/metrics/test-metric-converter.xml"));
-
+        Stat[] metricConfig = null;
+//                monitor.readStatsInfoFile(getClass().getResourceAsStream("/metrics/test-metric-converter.xml"));
+        MonitorConfiguration c = new MonitorConfiguration("Custom Metrics|X|");
+        c.setConfigYml("src/main/resources/conf/config.yml");
+        c.setMetricsXml("src/test/resources/metrics/test-metrics.xml",Stat.Stats.class);
+        c.setMetricWriter(Mockito.mock(MetricWriteHelper.class));
         //Create the Task with builder
         DataPowerMonitorTask original = (DataPowerMonitorTask) new MetricFetcher.Builder(false)
                 .server(Collections.singletonMap("uri", "http://localhost:5550/service/mgmt/current"))
-                .metricPrefix("Custom Metrics|X|")
-                .metricConfig(metricConfig)
-                .config(config)
+                .configuration(c)
                 .soapMessageUtil(soapMessageUtil)
-                .metricWriter(monitor)
+                .metricWriter(Mockito.mock(DataPowerMonitor.class))
                 .build();
         DataPowerMonitorTask fetcher = Mockito.spy(original);
 
@@ -114,7 +121,7 @@ public class MetricFetcherTest {
                         operation);
             }
         }).when(fetcher).getResponse(Mockito.anyString(), Mockito.anyString());
-        fetcher.fetchMetrics(Arrays.asList("default"));
+        fetcher.fetchMetrics(Arrays.asList("default"), c.getMetricPrefix());
     }
 
 

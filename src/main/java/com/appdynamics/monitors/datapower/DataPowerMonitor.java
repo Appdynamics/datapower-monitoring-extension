@@ -1,8 +1,8 @@
 package com.appdynamics.monitors.datapower;
 
-import com.appdynamics.extensions.StringUtils;
-import com.appdynamics.extensions.file.FileLoader;
-import com.appdynamics.extensions.yml.YmlReader;
+import com.appdynamics.extensions.conf.MonitorConfiguration;
+import com.appdynamics.extensions.conf.MonitorConfiguration.ConfItem;
+import com.appdynamics.extensions.util.MetricWriteHelperFactory;
 import com.appdynamics.monitors.util.SoapMessageUtil;
 import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
 import com.singularity.ee.agent.systemagent.api.MetricWriter;
@@ -12,17 +12,8 @@ import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * Created with IntelliJ IDEA.
@@ -36,13 +27,15 @@ public class DataPowerMonitor extends AManagedMonitor {
     private static final String METRIC_PREFIX = "Custom Metrics|Data Power|";
 
     private SoapMessageUtil soapMessageUtil;
-    private JAXBContext jaxbContext;
-    private Stat[] metricConfig;
-    private Map<String, ?> config;
+//    private JAXBContext jaxbContext;
+//    private Stat[] metricConfig;
+//    private Map<String, ?> config;
     protected boolean initialized;
-    private String metricPrefix;
-    private ExecutorService executorService;
-    private int executorServiceSize;
+//    private String metricPrefix;
+//    private ExecutorService executorService;
+//    private int executorServiceSize;
+    private MonitorConfiguration configuration;
+
 
     public DataPowerMonitor() {
         String version = getClass().getPackage().getImplementationTitle();
@@ -50,92 +43,99 @@ public class DataPowerMonitor extends AManagedMonitor {
         logger.info(msg);
         System.out.println(msg);
         soapMessageUtil = new SoapMessageUtil();
-        try {
-            jaxbContext = JAXBContext.newInstance(Stat.Stats.class);
-        } catch (JAXBException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            jaxbContext = JAXBContext.newInstance(Stat.Stats.class);
+//        } catch (JAXBException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     protected void initialize(Map<String, String> argsMap) {
         if (!initialized) {
             final String configFilePath = argsMap.get("config-file");
             final String metricFilePath = argsMap.get("metric-info-file");
-            FileLoader.load(new FileLoader.Listener() {
-                public void load(File file) {
-                    String path = file.getAbsolutePath();
-                    try {
-                        if (path.contains(configFilePath)) {
-                            logger.info("The file [{}] has changed, reloading the config", file.getAbsolutePath());
-                            reloadConfig(file);
-                        } else if (path.contains(metricFilePath)) {
-                            reloadMetricConfig(file);
-                            logger.info("The file [{}] has changed, reloading the metrics", file.getAbsolutePath());
-                        } else {
-                            logger.warn("Unknown file [{}] changed, ignoring", file.getAbsolutePath());
-                        }
-                    } catch (Exception e) {
-                        logger.error("Exception while reloading the file " + file.getAbsolutePath(), e);
-                    }
-                }
-            }, configFilePath, metricFilePath);
+            MonitorConfiguration conf = new MonitorConfiguration(METRIC_PREFIX);
+            conf.setConfigYml(configFilePath);
+            conf.setMetricsXml(metricFilePath,Stat.Stats.class);
+            conf.setMetricWriter(MetricWriteHelperFactory.create(this));
+            conf.checkIfInitialized(ConfItem.CONFIG_YML,ConfItem.METRIC_PREFIX,ConfItem.METRICS_XML
+                    ,ConfItem.HTTP_CLIENT,ConfItem.METRIC_WRITE_HELPER,ConfItem.EXECUTOR_SERVICE);
+//            FileLoader.load(new FileLoader.Listener() {
+//                public void load(File file) {
+//                    String path = file.getAbsolutePath().replace("\\","/");
+//                    try {
+//                        if (path.contains(configFilePath)) {
+//                            logger.info("The file [{}] has changed, reloading the config", file.getAbsolutePath());
+//                            reloadConfig(file);
+//                        } else if (path.contains(metricFilePath)) {
+//                            reloadMetricConfig(file);
+//                            logger.info("The file [{}] has changed, reloading the metrics", file.getAbsolutePath());
+//                        } else {
+//                            logger.warn("Unknown file [{}] changed, ignoring", file.getAbsolutePath());
+//                        }
+//                    } catch (Exception e) {
+//                        logger.error("Exception while reloading the file " + file.getAbsolutePath(), e);
+//                    }
+//                }
+//            }, configFilePath, metricFilePath);
+            this.configuration = conf;
             initialized = true;
         }
     }
 
-    protected void reloadMetricConfig(File metricFile) {
-        metricConfig = getStatsInfo(metricFile);
-    }
+//    protected void reloadMetricConfig(File metricFile) {
+//        metricConfig = getStatsInfo(metricFile);
+//    }
+//
+//    protected void reloadConfig(File file) {
+//        config = YmlReader.readFromFileAsMap(file);
+//        if (config != null) {
+//            metricPrefix = getMetricPrefix();
+//            Integer numberOfThreads = (Integer) config.get("numberOfThreads");
+//            if (numberOfThreads == null) {
+//                numberOfThreads = 5;
+//            }
+//            if (executorService == null) {
+//                executorService = createThreadPool(numberOfThreads);
+//                logger.info("Initializing the ThreadPool with size {}", numberOfThreads);
+//            } else if (numberOfThreads != executorServiceSize) {
+//                logger.info("The ThreadPool size has been updated from {} -> {}", executorServiceSize, numberOfThreads);
+//                executorService.shutdown();
+//                executorService = createThreadPool(numberOfThreads);
+//            }
+//            executorServiceSize = numberOfThreads;
+//        } else {
+//            throw new IllegalArgumentException("The config cannot be initialized from the file " + file.getAbsolutePath());
+//        }
+//    }
 
-    protected void reloadConfig(File file) {
-        config = YmlReader.readFromFileAsMap(file);
-        if (config != null) {
-            metricPrefix = getMetricPrefix();
-            Integer numberOfThreads = (Integer) config.get("numberOfThreads");
-            if (numberOfThreads == null) {
-                numberOfThreads = 5;
-            }
-            if (executorService == null) {
-                executorService = createThreadPool(numberOfThreads);
-                logger.info("Initializing the ThreadPool with size {}", numberOfThreads);
-            } else if (numberOfThreads != executorServiceSize) {
-                logger.info("The ThreadPool size has been updated from {} -> {}", executorServiceSize, numberOfThreads);
-                executorService.shutdown();
-                executorService = createThreadPool(numberOfThreads);
-            }
-            executorServiceSize = numberOfThreads;
-        } else {
-            throw new IllegalArgumentException("The config cannot be initialized from the file " + file.getAbsolutePath());
-        }
-    }
-
-    private ExecutorService createThreadPool(Integer numberOfThreads) {
-        return Executors.newFixedThreadPool(numberOfThreads.intValue(), new ThreadFactory() {
-            private int count;
-
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r, "DataPower-Task-Thread" + (++count));
-                thread.setContextClassLoader(AManagedMonitor.class.getClassLoader());
-                return thread;
-            }
-        });
-    }
-
-    protected String getMetricPrefix() {
-        if (this.config != null) {
-            String prefix = (String) this.config.get("metricPrefix");
-            logger.debug("The metric prefix from the config file is {}", prefix);
-            if (StringUtils.hasText(prefix)) {
-                prefix = StringUtils.trim(prefix, "|");
-                metricPrefix = prefix + "|";
-            } else {
-                metricPrefix = METRIC_PREFIX;
-            }
-            logger.info("The metric prefix is initialized as {}", metricPrefix);
-            return metricPrefix;
-        }
-        return METRIC_PREFIX;
-    }
+//    private ExecutorService createThreadPool(Integer numberOfThreads) {
+//        return Executors.newFixedThreadPool(numberOfThreads.intValue(), new ThreadFactory() {
+//            private int count;
+//
+//            public Thread newThread(Runnable r) {
+//                Thread thread = new Thread(r, "DataPower-Task-Thread" + (++count));
+//                thread.setContextClassLoader(AManagedMonitor.class.getClassLoader());
+//                return thread;
+//            }
+//        });
+//    }
+//
+//    protected String getMetricPrefix() {
+//        if (this.config != null) {
+//            String prefix = (String) this.config.get("metricPrefix");
+//            logger.debug("The metric prefix from the config file is {}", prefix);
+//            if (StringUtils.hasText(prefix)) {
+//                prefix = StringUtils.trim(prefix, "|");
+//                metricPrefix = prefix + "|";
+//            } else {
+//                metricPrefix = METRIC_PREFIX;
+//            }
+//            logger.info("The metric prefix is initialized as {}", metricPrefix);
+//            return metricPrefix;
+//        }
+//        return METRIC_PREFIX;
+//    }
 
     public TaskOutput execute(Map<String, String> argsMap, TaskExecutionContext executionContext) throws TaskExecutionException {
         Thread thread = Thread.currentThread();
@@ -146,12 +146,14 @@ public class DataPowerMonitor extends AManagedMonitor {
                 initialize(argsMap);
             }
             logger.debug("The raw arguments are {}", argsMap);
-            if (config != null && metricConfig != null) {
+            Map<String, ?> config = configuration.getConfigYml();
+            Stat.Stats metricConfig = (Stat.Stats) configuration.getMetricsXmlConfiguration();
+            if (config != null && metricConfig != null && metricConfig.getStats() != null) {
                 List<Map> servers = (List) config.get("servers");
                 if (servers != null && !servers.isEmpty()) {
                     for (Map server : servers) {
                         MetricFetcher task = createTask(server);
-                        executorService.execute(task);
+                        configuration.getExecutorService().execute(task);
                     }
                 } else {
                     logger.error("There are no servers configured");
@@ -184,39 +186,37 @@ public class DataPowerMonitor extends AManagedMonitor {
     protected MetricFetcher createTask(Map server) {
         return new MetricFetcher.Builder(useBulkApi(server))
                 .server(server)
-                .metricPrefix(metricPrefix)
-                .metricConfig(metricConfig)
-                .config(config)
+                .configuration(configuration)
                 .soapMessageUtil(soapMessageUtil)
                 .metricWriter(this)
                 .build();
     }
 
-    protected Stat[] getStatsInfo(File file) {
-        if (file.exists()) {
-            try {
-                return readStatsInfoFile(new FileInputStream(file));
-            } catch (Exception e) {
-                logger.error("Error while reading the metric file " + file.getAbsolutePath(), e);
-            }
-        }
-        return null;
-    }
-
-    protected Stat[] readStatsInfoFile(InputStream inputStream) {
-        try {
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            Stat.Stats stats = (Stat.Stats) unmarshaller.unmarshal(inputStream);
-            if (stats != null) {
-                return stats.getStats();
-            } else {
-                return null;
-            }
-        } catch (Exception e) {
-            logger.error("Error while unmarshalling the input file", e);
-            return null;
-        }
-    }
+//    protected Stat[] getStatsInfo(File file) {
+//        if (file.exists()) {
+//            try {
+//                return readStatsInfoFile(new FileInputStream(file));
+//            } catch (Exception e) {
+//                logger.error("Error while reading the metric file " + file.getAbsolutePath(), e);
+//            }
+//        }
+//        return null;
+//    }
+//
+//    protected Stat[] readStatsInfoFile(InputStream inputStream) {
+//        try {
+//            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+//            Stat.Stats stats = (Stat.Stats) unmarshaller.unmarshal(inputStream);
+//            if (stats != null) {
+//                return stats.getStats();
+//            } else {
+//                return null;
+//            }
+//        } catch (Exception e) {
+//            logger.error("Error while unmarshalling the input file", e);
+//            return null;
+//        }
+//    }
 
     protected void printMetric(String metricPath, String value, MetricType metricType) {
         if (metricType == null) {
@@ -256,13 +256,8 @@ public class DataPowerMonitor extends AManagedMonitor {
     }
 
     public void printMetric(String metricPath, String metricValue, String aggregation, String timeRollup, String cluster) {
-        MetricWriter metricWriter = getMetricWriter(metricPath,
-                aggregation,
-                timeRollup,
-                cluster
-        );
         if (metricValue != null) {
-            metricWriter.printMetric(metricValue.toString());
+            configuration.getMetricWriter().printMetric(metricPath, metricValue, aggregation, timeRollup, cluster);
         }
         if (logger.isDebugEnabled()) {
             logger.debug("Metric [" + aggregation + "/" + timeRollup + "/" + cluster

@@ -1,14 +1,22 @@
 package com.appdynamics.monitors.datapower;
 
 import com.appdynamics.extensions.StringUtils;
-import com.appdynamics.extensions.http.Response;
-import com.appdynamics.extensions.http.WebTarget;
+import com.appdynamics.extensions.http.UrlBuilder;
 import com.appdynamics.extensions.xml.Xml;
-import com.google.common.base.Strings;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by abey.tom on 5/12/15.
@@ -17,10 +25,11 @@ public class BulkApiMetricFetcher extends MetricFetcher {
     public static final Logger logger = LoggerFactory.getLogger(BulkApiMetricFetcher.class);
 
     @Override
-    protected void fetchMetrics(List<String> selectedDomains) {
+    protected void fetchMetrics(List<String> selectedDomains, String serverPrefix) {
         Map<String, Stat> oprMap = new HashMap<String, Stat>();
         Map<String, Stat> sysWidOprMap = new HashMap<String, Stat>();
-        for (Stat stat : metricConf) {
+        Stat[] stats = getStats();
+        for (Stat stat : stats) {
             Metric[] metrics = stat.getMetrics();
             if (metrics != null && metrics.length > 0) {
                 if ("true".equals(stat.getSystemWide())) {
@@ -32,11 +41,11 @@ public class BulkApiMetricFetcher extends MetricFetcher {
         }
         //Get Non system wide metrics for all of the domains
         for (String domain : selectedDomains) {
-            String domainPrefix = metricPrefix + domain;
+            String domainPrefix = serverPrefix + domain;
             getResponse(oprMap, domain, domainPrefix);
         }
         //Get the system wide operations any one of the domains
-        getResponseForSystemWide(sysWidOprMap, selectedDomains.get(0), StringUtils.trim(metricPrefix, "|"));
+        getResponseForSystemWide(sysWidOprMap, selectedDomains.get(0), StringUtils.trim(serverPrefix, "|"));
 
     }
 
@@ -81,27 +90,35 @@ public class BulkApiMetricFetcher extends MetricFetcher {
 
     protected Map<String, Xml[]> getResponse(Collection<String> operations, String domain) {
         String soapMessage = soapMessageUtil.createSoapMessage(operations, domain);
-        WebTarget target = httpClient.target();
-        Response response = null;
+        String url = UrlBuilder.fromYmlServerConfig(server).build();
+        CloseableHttpResponse response = null;
         try {
-            logger.debug("The SOAP Request Generated for the domain={} and operation={} is payload={}"
-                    , domain, operations, soapMessage);
-            response = target.post(soapMessage);
-            String responseStr = response.string();
-            if (response.getStatus() == 200 && !Strings.isNullOrEmpty(responseStr)) {
+            CloseableHttpClient httpClient = configuration.getHttpClient();
+            logger.debug("The SOAP Request Generated for the domain={} and operation={} is payload={} and url={}"
+                    , domain, operations, soapMessage,url);
+            HttpPost post = new HttpPost(url);
+            StringEntity entity = new StringEntity(soapMessage, ContentType.TEXT_XML);
+            post.setEntity(entity);
+            response = httpClient.execute(post);
+            String responseStr = EntityUtils.toString(response.getEntity());
+            if (response.getStatusLine().getStatusCode() == 200) {
                 return soapMessageUtil.getSoapResponseBody(responseStr, operations);
             } else {
-                logger.error("Error (response code = {}) while fetching the data from absolute url={}, url={} and payload={}"
-                        , target.getAbsoluteUrl(), target.getUrl(), soapMessage);
-                logger.error("The response code is {} and content is {}", response.getStatus(), responseStr);
+                logger.error("Error (response code = {}) while fetching the data from absolute url={} and payload={}"
+                        , url, soapMessage);
+                logger.error("The response code is {} and content is {}", response.getStatusLine(), responseStr);
             }
         } catch (Exception e) {
-            logger.error("Error while fetching the data from absolute url={}, url={} and payload={}"
-                    , target.getAbsoluteUrl(), target.getUrl(), soapMessage);
-            logger.error("", e);
+            String msg = String.format("Error while fetching the data from absolute url=[%s] and payload=[%s]"
+                    , url, soapMessage);
+            logger.error(msg, e);
+            configuration.getMetricWriter().registerError(msg,e);
         } finally {
             if (response != null) {
-                response.close();
+                try {
+                    response.close();
+                } catch (IOException e) {
+                }
             }
         }
         return null;

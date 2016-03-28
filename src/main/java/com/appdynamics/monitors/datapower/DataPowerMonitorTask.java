@@ -14,18 +14,18 @@ public class DataPowerMonitorTask extends MetricFetcher {
     public static final Logger logger = LoggerFactory.getLogger(DataPowerMonitorTask.class);
 
     @Override
-    protected void fetchMetrics(List<String> selectedDomains) {
+    protected void fetchMetrics(List<String> selectedDomains, String serverPrefix) {
         for (String domain : selectedDomains) {
-            String domainPrefix = metricPrefix + domain;
-            for (Stat stat : metricConf) {
+            String domainPrefix = serverPrefix + domain;
+            for (Stat stat : getStats()) {
                 if (!"true".equals(stat.getSystemWide())) {
                     fetchMetrics(domain, domainPrefix, stat);
                 }
             }
         }
         String domain = selectedDomains.get(0);
-        String prefix = StringUtils.trim(metricPrefix, "|");
-        for (Stat stat : metricConf) {
+        String prefix = StringUtils.trim(serverPrefix, "|");
+        for (Stat stat : getStats()) {
             if ("true".equals(stat.getSystemWide())) {
                 if(StringUtils.hasText(stat.getUseDomain())){
                     fetchMetrics(stat.getUseDomain(),prefix,stat);
