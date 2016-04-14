@@ -39,9 +39,11 @@ public class BulkApiMetricFetcherTest {
         server.put("uri", "http://localhost:5550/service/mgmt/current");
         server.put("domains", Arrays.asList("domain1","domain2"));
 
-        MonitorConfiguration c = new MonitorConfiguration("Custom Metrics|X|");
+        MetricWriteHelper writer = Mockito.mock(MetricWriteHelper.class);
+        Runnable runner = Mockito.mock(Runnable.class);
+        MonitorConfiguration c = new MonitorConfiguration("Custom Metrics|X|",runner,writer);
         c.setConfigYml("src/main/resources/conf/config.yml");
-        c.setMetricWriter(Mockito.mock(MetricWriteHelper.class));
+
         //c.setMetricsXml("/metrics/test-metrics.xml",Stat.Stats.class);
         //Create the Task with builder
         BulkApiMetricFetcher original = (BulkApiMetricFetcher) new MetricFetcher.Builder(true)

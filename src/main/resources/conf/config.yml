@@ -27,6 +27,7 @@ servers:
 
 # number of concurrent tasks
 numberOfThreads: 5
+
 encryptionKey: welcome
 
 connection:
@@ -40,3 +41,7 @@ connection:
 #  uri: http://localhost:9090
 #  username: proxyyuser
 #  password: proxypassword
+
+#taskSchedule:
+#  numberOfThreads: 1
+#  taskDelaySeconds: 300

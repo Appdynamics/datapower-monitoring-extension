@@ -68,10 +68,11 @@ public class MetricFetcherTest {
         Stat[] metricConfig = null;
                 //monitor.readStatsInfoFile(getClass().getResourceAsStream("/metrics/test-metrics.xml"));
 
-        MonitorConfiguration c = new MonitorConfiguration("Custom Metrics|X|");
+        MetricWriteHelper writer = Mockito.mock(MetricWriteHelper.class);
+        Runnable runnable = Mockito.mock(Runnable.class);
+        MonitorConfiguration c = new MonitorConfiguration("Custom Metrics|X|",runnable,writer);
         c.setConfigYml("src/main/resources/conf/config.yml");
         c.setMetricsXml("src/test/resources/metrics/test-metrics.xml",Stat.Stats.class);
-        c.setMetricWriter(Mockito.mock(MetricWriteHelper.class));
         //Create the Task with builder
         DataPowerMonitorTask original = (DataPowerMonitorTask) new MetricFetcher.Builder(false)
                 .server(Collections.singletonMap("uri", "http://localhost:5550/service/mgmt/current"))
@@ -100,7 +101,9 @@ public class MetricFetcherTest {
         Map<String, ?> config = YmlReader.readFromFileAsMap(new File(getClass().getResource("/conf/config.yml").getFile()));
         Stat[] metricConfig = null;
 //                monitor.readStatsInfoFile(getClass().getResourceAsStream("/metrics/test-metric-converter.xml"));
-        MonitorConfiguration c = new MonitorConfiguration("Custom Metrics|X|");
+        MetricWriteHelper writer = Mockito.mock(MetricWriteHelper.class);
+        Runnable runnable = Mockito.mock(Runnable.class);
+        MonitorConfiguration c = new MonitorConfiguration("Custom Metrics|X|",runnable,writer);
         c.setConfigYml("src/main/resources/conf/config.yml");
         c.setMetricsXml("src/test/resources/metrics/test-metrics.xml",Stat.Stats.class);
         c.setMetricWriter(Mockito.mock(MetricWriteHelper.class));
