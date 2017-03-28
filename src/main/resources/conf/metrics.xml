@@ -42,7 +42,7 @@
                 metric-type="COLLECTIVE_OBSERVED_AVERAGE" aggregate-label="Average Response Time (ms)" aggregation-type="AVERAGE"/>
     </stat>
     <stat name="HTTPTransactions" label="Transactions">
-        <metric label-xpath="proxy" value-xpath="oneMinute" label-suffix="|Calls per Minute"  multiplier="60"
+        <metric label-xpath="proxy" value-xpath="oneMinute" label-suffix="|Calls per Minute"
                 metric-type="COLLECTIVE_OBSERVED_CURRENT" aggregate-label="Calls per Minute"/>
     </stat>
     <stat name="ConnectionsAccepted" label="Transactions">
@@ -68,9 +68,6 @@
             <converter label="up" value="1"/>
             <converter label="$default" value="0"/>
         </metric>
-        <filter>//ObjectStatus[Class='HTTPSourceProtocolHandler' and Name='NBNCoMultiProtocolGateway']</filter>
-        <filter>//ObjectStatus[Class='HTTPSourceProtocolHandler' and Name='AMQ']</filter>
-        <filter>//ObjectStatus[Class='MultiProtocolGateway' and Name='NBNCoMultiProtocolGateway']</filter>
-        <filter>//ObjectStatus[Class='MQSourceProtocolHandler' and Name='IB2B.B2B.MANAGE_ACTIVATION.V1.OUTPUT']</filter>
+        <filter>//ObjectStatus[Class='Class' and Name='Name']</filter>
     </stat>
 </stats>
