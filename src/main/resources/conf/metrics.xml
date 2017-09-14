@@ -68,6 +68,6 @@
             <converter label="up" value="1"/>
             <converter label="$default" value="0"/>
         </metric>
-        <filter>//ObjectStatus[Class='Class' and Name='Name']</filter>
+        <!--<filter>//ObjectStatus[Class='Class' and Name='Name']</filter>-->
     </stat>
 </stats>
