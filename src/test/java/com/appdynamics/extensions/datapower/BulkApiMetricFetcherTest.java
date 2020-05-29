@@ -1,24 +1,26 @@
 /*
- * Copyright 2018. AppDynamics LLC and its affiliates.
+ * Copyright 2020. AppDynamics LLC and its affiliates.
  * All Rights Reserved.
  * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  * The copyright notice above does not evidence any actual or intended publication of such source code.
  */
 
-package com.appdynamics.monitors.datapower;
+package com.appdynamics.extensions.datapower;
 
-import com.appdynamics.extensions.conf.MonitorConfiguration;
-import com.appdynamics.extensions.util.MetricWriteHelper;
-import com.appdynamics.extensions.xml.Xml;
+import com.appdynamics.extensions.AMonitorJob;
+import com.appdynamics.extensions.MetricWriteHelper;
+import com.appdynamics.extensions.conf.MonitorContextConfiguration;
+import com.appdynamics.extensions.datapower.util.SoapMessageUtil;
+import com.appdynamics.extensions.datapower.util.Xml;
+import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import com.appdynamics.extensions.yml.YmlReader;
-import com.appdynamics.monitors.util.SoapMessageUtil;
+import com.google.common.collect.Maps;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.InputStream;
@@ -30,7 +32,7 @@ import java.util.Map;
  * Created by abey.tom on 7/31/15.
  */
 public class BulkApiMetricFetcherTest {
-    public static final Logger logger = LoggerFactory.getLogger(BulkApiMetricFetcherTest.class);
+    private static final Logger logger = ExtensionsLoggerFactory.getLogger(BulkApiMetricFetcherTest.class);
 
     @Test
     public void run() {
@@ -40,24 +42,21 @@ public class BulkApiMetricFetcherTest {
         //Read the YAML and metrics.xml
         Map<String, ?> config = YmlReader.readFromFileAsMap(new File(getClass().getResource("/conf/config.yml").getFile()));
 
-        Stat[] metricConfig = null;
-//                monitor.readStatsInfoFile(getClass().getResourceAsStream("/conf/metrics.xml"));
         Map server = new HashMap();
         server.put("uri", "http://localhost:5550/service/mgmt/current");
         server.put("domains", Arrays.asList("domain1","domain2"));
 
-        MetricWriteHelper writer = Mockito.mock(MetricWriteHelper.class);
-        Runnable runner = Mockito.mock(Runnable.class);
-        MonitorConfiguration c = new MonitorConfiguration("Custom Metrics|X|",runner,writer);
+        AMonitorJob monitorJob = Mockito.mock(AMonitorJob.class);
+        MonitorContextConfiguration c = new MonitorContextConfiguration("DataPowerMonitor","Custom Metrics|X|",new File("Dummy"), monitorJob);
         c.setConfigYml("src/main/resources/conf/config.yml");
 
         //c.setMetricsXml("/metrics/test-metrics.xml",Stat.Stats.class);
         //Create the Task with builder
         BulkApiMetricFetcher original = (BulkApiMetricFetcher) new MetricFetcher.Builder(true)
-                .server(server)
-                .configuration(c)
-                .soapMessageUtil(soapMessageUtil)
-                .metricWriter(monitor)
+                .withServer(server)
+                .withConfiguration(c)
+                .withSoapMessageUtil(soapMessageUtil)
+                .withMetricWriteHelper(Mockito.mock(MetricWriteHelper.class))
                 .build();
         BulkApiMetricFetcher fetcher = Mockito.spy(original);
 
@@ -82,8 +81,8 @@ public class BulkApiMetricFetcherTest {
 //                Assert.assertEquals(value, remove);
                 return null;
             }
-        }).when(monitor).printMetric(Mockito.anyString(), Mockito.anyString(),
-                Mockito.anyString(), Mockito.anyString(), Mockito.anyString());
+        }).when(monitor).createTask(Maps.newHashMap(),Mockito.mock(MetricWriteHelper.class));
+
         //execute
         fetcher.run();
 

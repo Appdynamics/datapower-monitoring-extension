@@ -1,19 +1,24 @@
 /*
- * Copyright 2018. AppDynamics LLC and its affiliates.
+ * Copyright 2020. AppDynamics LLC and its affiliates.
  * All Rights Reserved.
  * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  * The copyright notice above does not evidence any actual or intended publication of such source code.
  */
 
-package com.appdynamics.monitors.util;
+package com.appdynamics.extensions.datapower.util;
 
-import com.appdynamics.extensions.xml.Xml;
+import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
 import javax.xml.namespace.QName;
-import javax.xml.soap.*;
+import javax.xml.soap.MessageFactory;
+import javax.xml.soap.SOAPBody;
+import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPEnvelope;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPMessage;
+import javax.xml.soap.SOAPPart;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Collection;
@@ -28,7 +33,7 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class SoapMessageUtil {
-    public static final Logger logger = LoggerFactory.getLogger(SoapMessageUtil.class);
+    private static final Logger logger = ExtensionsLoggerFactory.getLogger(SoapMessageUtil.class);
 
     private final MessageFactory messageFactory;
 

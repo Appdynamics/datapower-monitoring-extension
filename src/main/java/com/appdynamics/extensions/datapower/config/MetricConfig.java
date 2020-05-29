@@ -1,14 +1,12 @@
 /*
- * Copyright 2018. AppDynamics LLC and its affiliates.
+ * Copyright 2020. AppDynamics LLC and its affiliates.
  * All Rights Reserved.
  * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  * The copyright notice above does not evidence any actual or intended publication of such source code.
  */
 
-package com.appdynamics.monitors.datapower;
+package com.appdynamics.extensions.datapower.config;
 
-
-import com.appdynamics.extensions.util.AggregationType;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -24,7 +22,7 @@ import java.math.BigDecimal;
  * To change this template use File | Settings | File Templates.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Metric {
+public class MetricConfig {
 
     @XmlAttribute
     private String label;
@@ -47,18 +45,23 @@ public class Metric {
     @XmlAttribute(name = "label-delim")
     private String labelDelim;
 
-    @XmlAttribute(name = "metric-type")
-    private MetricType metricType;
+    @XmlAttribute
+    private String delta;
 
-    @XmlAttribute(name = "aggregate-label")
-    private String aggregateLabel;
+    @XmlAttribute
+    private String aggregationType;
 
-    @XmlAttribute(name = "aggregation-type")
-    private AggregationType aggregationType;
+    @XmlAttribute
+    private String timeRollUpType;
 
-    @XmlElement(name = "converter")
+    @XmlAttribute
+    private String clusterRollUpType;
+
+    @XmlElement(name = "convert")
     private MetricConverter[] converters;
 
+    @XmlAttribute(name="isBoolean")
+    private String isBoolean = "false";
 
     public String getLabel() {
         return label;
@@ -108,27 +111,11 @@ public class Metric {
         this.labelPrefix = labelPrefix;
     }
 
-    public MetricType getMetricType() {
-        return metricType;
-    }
-
-    public void setMetricType(MetricType metricType) {
-        this.metricType = metricType;
-    }
-
-    public String getAggregateLabel() {
-        return aggregateLabel;
-    }
-
-    public void setAggregateLabel(String aggregateLabel) {
-        this.aggregateLabel = aggregateLabel;
-    }
-
-    public AggregationType getAggregationType() {
+    public String getAggregationType() {
         return aggregationType;
     }
 
-    public void setAggregationType(AggregationType aggregationType) {
+    public void setAggregationType(String aggregationType) {
         this.aggregationType = aggregationType;
     }
 
@@ -157,8 +144,38 @@ public class Metric {
                 ", multiplier=" + multiplier +
                 ", labelPrefix='" + labelPrefix + '\'' +
                 ", labelSuffix='" + labelSuffix + '\'' +
-                ", metricType=" + metricType +
-                ", aggregateLabel='" + aggregateLabel + '\'' +
                 '}';
+    }
+
+    public String getDelta() {
+        return delta;
+    }
+
+    public void setDelta(String delta) {
+        this.delta = delta;
+    }
+
+    public String getTimeRollUpType() {
+        return timeRollUpType;
+    }
+
+    public void setTimeRollUpType(String timeRollUpType) {
+        this.timeRollUpType = timeRollUpType;
+    }
+
+    public String getClusterRollUpType() {
+        return clusterRollUpType;
+    }
+
+    public void setClusterRollUpType(String clusterRollUpType) {
+        this.clusterRollUpType = clusterRollUpType;
+    }
+
+    public String getIsBoolean() {
+        return isBoolean;
+    }
+
+    public void setIsBoolean(String isBoolean) {
+        this.isBoolean = isBoolean;
     }
 }

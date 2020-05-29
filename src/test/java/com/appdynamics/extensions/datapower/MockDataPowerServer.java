@@ -1,12 +1,13 @@
 /*
- * Copyright 2018. AppDynamics LLC and its affiliates.
+ * Copyright 2020. AppDynamics LLC and its affiliates.
  * All Rights Reserved.
  * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  * The copyright notice above does not evidence any actual or intended publication of such source code.
  */
 
-package com.appdynamics.monitors.datapower;
+package com.appdynamics.extensions.datapower;
 
+import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import com.google.common.base.Strings;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -19,7 +20,6 @@ import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  * Created by abey.tom on 11/9/14.
  */
 public class MockDataPowerServer {
-    public static final Logger logger = LoggerFactory.getLogger(MockDataPowerServer.class);
+    private static final Logger logger = ExtensionsLoggerFactory.getLogger(MockDataPowerServer.class);
     private static Server server;
 
     public static void main(String[] args) throws Exception {
