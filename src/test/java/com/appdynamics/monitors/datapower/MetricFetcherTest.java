@@ -1,5 +1,5 @@
 /*
- * Copyright 2018. AppDynamics LLC and its affiliates.
+ * Copyright 2020. AppDynamics LLC and its affiliates.
  * All Rights Reserved.
  * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  * The copyright notice above does not evidence any actual or intended publication of such source code.
@@ -7,9 +7,8 @@
 
 package com.appdynamics.monitors.datapower;
 
-import com.appdynamics.extensions.conf.MonitorConfiguration;
-import com.appdynamics.extensions.util.MetricWriteHelper;
-import com.appdynamics.extensions.yml.YmlReader;
+import com.appdynamics.extensions.AMonitorJob;
+import com.appdynamics.extensions.conf.MonitorContextConfiguration;
 import com.appdynamics.monitors.util.SoapMessageUtil;
 import com.appdynamics.monitors.util.TestHelper;
 import org.junit.Assert;
@@ -23,7 +22,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by abey.tom on 7/31/15.
@@ -68,18 +66,12 @@ public class MetricFetcherTest {
 
     @Test
     public void testFetchMetric() {
-        DataPowerMonitor monitor = Mockito.spy(new DataPowerMonitor());
         final SoapMessageUtil soapMessageUtil = new SoapMessageUtil();
         //Read the YAML and metrics.xml
-        Map<String, ?> config = YmlReader.readFromFileAsMap(new File(getClass().getResource("/conf/config.yml").getFile()));
-        Stat[] metricConfig = null;
-                //monitor.readStatsInfoFile(getClass().getResourceAsStream("/metrics/test-metrics.xml"));
-
-        MetricWriteHelper writer = Mockito.mock(MetricWriteHelper.class);
-        Runnable runnable = Mockito.mock(Runnable.class);
-        MonitorConfiguration c = new MonitorConfiguration("Custom Metrics|X|",runnable,writer);
+        AMonitorJob monitorJob = Mockito.mock(AMonitorJob.class);
+        MonitorContextConfiguration c = new MonitorContextConfiguration("DataPowerMonitor","Custom Metrics|X|", new File("Dummy"), monitorJob);
         c.setConfigYml("src/main/resources/conf/config.yml");
-        c.setMetricsXml("src/test/resources/metrics/test-metrics.xml",Stat.Stats.class);
+        c.setMetricXml("src/test/resources/metrics/test-metrics.xml",Stat.Stats.class);
         //Create the Task with builder
         DataPowerMonitorTask original = (DataPowerMonitorTask) new MetricFetcher.Builder(false)
                 .server(Collections.singletonMap("uri", "http://localhost:5550/service/mgmt/current"))
@@ -102,19 +94,12 @@ public class MetricFetcherTest {
 
     @Test
     public void testMetricConverter() {
-        DataPowerMonitor monitor = Mockito.spy(new DataPowerMonitor());
         final SoapMessageUtil soapMessageUtil = new SoapMessageUtil();
         //Read the YAML and metrics.xml
-        Map<String, ?> config = YmlReader.readFromFileAsMap(new File(getClass().getResource("/conf/config.yml").getFile()));
-        Stat[] metricConfig = null;
-//                monitor.readStatsInfoFile(getClass().getResourceAsStream("/metrics/test-metric-converter.xml"));
-        MetricWriteHelper writer = Mockito.mock(MetricWriteHelper.class);
-        Runnable runnable = Mockito.mock(Runnable.class);
-        MonitorConfiguration c = new MonitorConfiguration("Custom Metrics|X|",runnable,writer);
+        AMonitorJob monitorJob = Mockito.mock(AMonitorJob.class);
+        MonitorContextConfiguration c = new MonitorContextConfiguration("DataPowerMonitor","Custom Metrics|X|", new File("Dummy"), monitorJob);
         c.setConfigYml("src/main/resources/conf/config.yml");
-        c.setMetricsXml("src/test/resources/metrics/test-metrics.xml",Stat.Stats.class);
-        c.setMetricWriter(Mockito.mock(MetricWriteHelper.class));
-        //Create the Task with builder
+        c.setMetricXml("src/test/resources/metrics/test-metrics.xml",Stat.Stats.class);
         DataPowerMonitorTask original = (DataPowerMonitorTask) new MetricFetcher.Builder(false)
                 .server(Collections.singletonMap("uri", "http://localhost:5550/service/mgmt/current"))
                 .configuration(c)

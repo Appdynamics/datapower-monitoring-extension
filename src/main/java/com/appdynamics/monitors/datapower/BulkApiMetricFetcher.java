@@ -1,5 +1,5 @@
 /*
- * Copyright 2018. AppDynamics LLC and its affiliates.
+ * Copyright 2020. AppDynamics LLC and its affiliates.
  * All Rights Reserved.
  * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  * The copyright notice above does not evidence any actual or intended publication of such source code.
@@ -7,9 +7,9 @@
 
 package com.appdynamics.monitors.datapower;
 
-import com.appdynamics.extensions.StringUtils;
 import com.appdynamics.extensions.http.UrlBuilder;
-import com.appdynamics.extensions.xml.Xml;
+import com.appdynamics.extensions.util.StringUtils;
+import com.appdynamics.monitors.util.Xml;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -74,7 +74,7 @@ public class BulkApiMetricFetcher extends MetricFetcher {
         for (String dom : domainStatMap.keySet()) {
             Map<String, Stat> statMap = domainStatMap.get(dom);
             logger.info("Fetching the operations {} from domain [{}]", statMap.keySet(), dom);
-            getResponse(statMap, domain, prefix);
+                getResponse(statMap, domain, prefix);
         }
     }
 
@@ -100,7 +100,7 @@ public class BulkApiMetricFetcher extends MetricFetcher {
         String url = UrlBuilder.fromYmlServerConfig(server).build();
         CloseableHttpResponse response = null;
         try {
-            CloseableHttpClient httpClient = configuration.getHttpClient();
+            CloseableHttpClient httpClient = configuration.getContext().getHttpClient();
             logger.debug("The SOAP Request Generated for the domain={} and operation={} is payload={} and url={}"
                     , domain, operations, soapMessage,url);
             HttpPost post = new HttpPost(url);
@@ -119,7 +119,7 @@ public class BulkApiMetricFetcher extends MetricFetcher {
             String msg = String.format("Error while fetching the data from absolute url=[%s] and payload=[%s]"
                     , url, soapMessage);
             logger.error(msg, e);
-            configuration.getMetricWriter().registerError(msg,e);
+//            configuration.getMetricWriter().registerError(msg,e);
         } finally {
             if (response != null) {
                 try {

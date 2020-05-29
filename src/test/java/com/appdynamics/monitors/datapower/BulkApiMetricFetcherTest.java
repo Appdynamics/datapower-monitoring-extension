@@ -1,5 +1,5 @@
 /*
- * Copyright 2018. AppDynamics LLC and its affiliates.
+ * Copyright 2020. AppDynamics LLC and its affiliates.
  * All Rights Reserved.
  * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  * The copyright notice above does not evidence any actual or intended publication of such source code.
@@ -7,11 +7,11 @@
 
 package com.appdynamics.monitors.datapower;
 
-import com.appdynamics.extensions.conf.MonitorConfiguration;
-import com.appdynamics.extensions.util.MetricWriteHelper;
-import com.appdynamics.extensions.xml.Xml;
+import com.appdynamics.extensions.AMonitorJob;
+import com.appdynamics.extensions.conf.MonitorContextConfiguration;
 import com.appdynamics.extensions.yml.YmlReader;
 import com.appdynamics.monitors.util.SoapMessageUtil;
+import com.appdynamics.monitors.util.Xml;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -46,9 +46,8 @@ public class BulkApiMetricFetcherTest {
         server.put("uri", "http://localhost:5550/service/mgmt/current");
         server.put("domains", Arrays.asList("domain1","domain2"));
 
-        MetricWriteHelper writer = Mockito.mock(MetricWriteHelper.class);
-        Runnable runner = Mockito.mock(Runnable.class);
-        MonitorConfiguration c = new MonitorConfiguration("Custom Metrics|X|",runner,writer);
+        AMonitorJob monitorJob = Mockito.mock(AMonitorJob.class);
+        MonitorContextConfiguration c = new MonitorContextConfiguration("DataPowerMonitor","Custom Metrics|X|",new File("Dummy"), monitorJob);
         c.setConfigYml("src/main/resources/conf/config.yml");
 
         //c.setMetricsXml("/metrics/test-metrics.xml",Stat.Stats.class);

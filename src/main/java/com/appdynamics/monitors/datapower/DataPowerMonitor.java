@@ -1,5 +1,5 @@
 /*
- * Copyright 2018. AppDynamics LLC and its affiliates.
+ * Copyright 2020. AppDynamics LLC and its affiliates.
  * All Rights Reserved.
  * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  * The copyright notice above does not evidence any actual or intended publication of such source code.
@@ -7,16 +7,13 @@
 
 package com.appdynamics.monitors.datapower;
 
-import com.appdynamics.extensions.conf.MonitorConfiguration;
-import com.appdynamics.extensions.conf.MonitorConfiguration.ConfItem;
-import com.appdynamics.extensions.util.MetricWriteHelper;
-import com.appdynamics.extensions.util.MetricWriteHelperFactory;
+import com.appdynamics.extensions.ABaseMonitor;
+import com.appdynamics.extensions.MetricWriteHelper;
+import com.appdynamics.extensions.TasksExecutionServiceProvider;
+import com.appdynamics.extensions.conf.MonitorContextConfiguration;
+import com.appdynamics.extensions.util.AssertUtils;
 import com.appdynamics.monitors.util.SoapMessageUtil;
-import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
 import com.singularity.ee.agent.systemagent.api.MetricWriter;
-import com.singularity.ee.agent.systemagent.api.TaskExecutionContext;
-import com.singularity.ee.agent.systemagent.api.TaskOutput;
-import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,13 +27,13 @@ import java.util.Map;
  * Time: 4:24 PM
  * To change this template use File | Settings | File Templates.
  */
-public class DataPowerMonitor extends AManagedMonitor {
+public class DataPowerMonitor extends ABaseMonitor {
     public static final Logger logger = LoggerFactory.getLogger(DataPowerMonitor.class);
     private static final String METRIC_PREFIX = "Custom Metrics|Data Power|";
 
     private SoapMessageUtil soapMessageUtil;
-    protected boolean initialized;
-    private MonitorConfiguration configuration;
+    private MonitorContextConfiguration configuration;
+    private MetricWriteHelper metricWriter; //TODO: remove it
 
 
     public DataPowerMonitor() {
@@ -47,62 +44,53 @@ public class DataPowerMonitor extends AManagedMonitor {
         soapMessageUtil = new SoapMessageUtil();
     }
 
-    protected void initialize(Map<String, String> argsMap) {
-        if (!initialized) {
-            final String configFilePath = argsMap.get("config-file");
-            final String metricFilePath = argsMap.get("metric-info-file");
-            MetricWriteHelper metricWriteHelper = MetricWriteHelperFactory.create(this);
-            MonitorConfiguration conf = new MonitorConfiguration(METRIC_PREFIX, new TaskRunnable(), metricWriteHelper);
-            conf.setConfigYml(configFilePath);
-            conf.setMetricsXml(metricFilePath,Stat.Stats.class);
-            conf.checkIfInitialized(ConfItem.CONFIG_YML,ConfItem.METRIC_PREFIX,ConfItem.METRICS_XML
-                    ,ConfItem.HTTP_CLIENT,ConfItem.METRIC_WRITE_HELPER,ConfItem.EXECUTOR_SERVICE);
-            this.configuration = conf;
-            initialized = true;
-        }
+    protected String getDefaultMetricPrefix() {
+        return null;
     }
 
-    private class TaskRunnable implements Runnable{
+    public String getMonitorName() {
+        return null;
+    }
 
-        public void run() {
-            Map<String, ?> config = configuration.getConfigYml();
-            Stat.Stats metricConfig = (Stat.Stats) configuration.getMetricsXmlConfiguration();
-            if (config != null && metricConfig != null && metricConfig.getStats() != null) {
-                List<Map> servers = (List) config.get("servers");
-                if (servers != null && !servers.isEmpty()) {
-                    for (Map server : servers) {
-                        MetricFetcher task = createTask(server);
-                        configuration.getExecutorService().execute(task);
-                    }
-                } else {
-                    logger.error("There are no servers configured");
+    protected void doRun(TasksExecutionServiceProvider tasksExecutionServiceProvider) {
+        configuration = getContextConfiguration();
+        metricWriter = tasksExecutionServiceProvider.getMetricWriteHelper(); //TODO: remove it
+        Map<String, ?> config = configuration.getConfigYml();
+        Stat.Stats metricConfig = (Stat.Stats) configuration.getMetricsXml();
+        if (config != null && metricConfig != null && metricConfig.getStats() != null) {
+            List<Map> servers = (List) config.get("servers");
+            if (servers != null && !servers.isEmpty()) {
+                for (Map server : servers) {
+                    MetricFetcher task = createTask(server);
+                    configuration.getContext().getExecutorService().execute("Datapower-" + server.get("displayName"), task);
                 }
             } else {
-                if (config == null) {
-                    logger.error("The config.yml is not loaded due to previous errors.The task will not run");
-                }
-                if (metricConfig == null) {
-                    logger.error("The metrics.xml is not loaded due to previous errors.The task will not run");
-                }
+                logger.error("There are no servers configured");
+            }
+        } else {
+            if (config == null) {
+                logger.error("The config.yml is not loaded due to previous errors.The task will not run");
+            }
+            if (metricConfig == null) {
+                logger.error("The metrics.xml is not loaded due to previous errors.The task will not run");
             }
         }
     }
 
+    @Override
+    protected List<Map<String, ?>> getServers() {
+        Map<String, ?> config = configuration.getConfigYml();
+        AssertUtils.assertNotNull(config, "The config is not loaded due to previous error");
+        List<Map<String, ?>> servers = (List<Map<String, ?>>) config.get("servers");
+        AssertUtils.assertNotNull(servers, "The 'instances' section in config.yml is not initialised");
+        return servers;
+    }
 
-    public TaskOutput execute(Map<String, String> argsMap, TaskExecutionContext executionContext) throws TaskExecutionException {
-        Thread thread = Thread.currentThread();
-        ClassLoader originalCl = thread.getContextClassLoader();
-        thread.setContextClassLoader(AManagedMonitor.class.getClassLoader());
-        try {
-        if (!initialized) {
-            initialize(argsMap);
-        }
-        logger.debug("The raw arguments are {}", argsMap);
-        configuration.executeTask();
-        } finally {
-            thread.setContextClassLoader(originalCl);
-        }
-        return new TaskOutput("DataPower Monitor Completed");
+    @Override
+    protected void initializeMoreStuff(Map<String, String> args) {
+        configuration = getContextConfiguration();
+        logger.info("initializing metric.xml file");
+        configuration.setMetricXml(args.get("metric-file"), Stat.Stats.class);
     }
 
     private boolean useBulkApi(Map server) {
@@ -164,9 +152,21 @@ public class DataPowerMonitor extends AManagedMonitor {
 
     public void printMetric(String metricPath, String metricValue, String aggregation, String timeRollup, String cluster) {
         if (metricValue != null) {
-            configuration.getMetricWriter().printMetric(metricPath, metricValue, aggregation, timeRollup, cluster);
+            metricWriter.printMetric(metricPath, metricValue, aggregation, timeRollup, cluster);
         }
     }
 
+//    public static void main(String[] args) {
+//
+//        final Map<String, String> taskArgs = new HashMap();
+//        taskArgs.put("config-file", "src/main/resources/conf/config.yml");
+//        taskArgs.put("metric-file", "src/main/resources/conf/metrics.xml");
+//        try {
+//            final DataPowerMonitor monitor = new DataPowerMonitor();
+//            monitor.execute(taskArgs, null);
+//        } catch (Exception e) {
+//            logger.error("Error while running the task", e);
+//        }
+//    }
 
 }

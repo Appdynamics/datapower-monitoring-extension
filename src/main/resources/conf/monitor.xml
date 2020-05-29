@@ -1,5 +1,5 @@
 <!--
-  ~ Copyright 2018. AppDynamics LLC and its affiliates.
+  ~ Copyright 2020. AppDynamics LLC and its affiliates.
   ~ All Rights Reserved.
   ~ This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
   ~ The copyright notice above does not evidence any actual or intended publication of such source code.
@@ -9,8 +9,7 @@
     <name>DataPowerMonitor</name>
     <type>managed</type>
     <description>Collects the metrics from IBM DataPower SOA Appliance</description>
-    <monitor-configuration>
-    </monitor-configuration>
+    <monitor-configuration></monitor-configuration>
     <monitor-run-task>
         <execution-style>periodic</execution-style>
         <execution-frequency-in-seconds>60</execution-frequency-in-seconds>
@@ -18,14 +17,14 @@
         <display-name>DataPowerMonitor Task</display-name>
         <description>DataPowerMonitor Task</description>
         <type>java</type>
-        <execution-timeout-in-secs>120</execution-timeout-in-secs>
+        <execution-timeout-in-secs>60</execution-timeout-in-secs>
         <task-arguments>
             <argument name="config-file" is-required="true" default-value="monitors/DataPowerMonitor/config.yml" />
             <argument name="metric-info-file" is-required="true" default-value="monitors/DataPowerMonitor/metrics.xml"/>
         </task-arguments>
         <java-task>
             <classpath>datapower-monitoring-extension.jar</classpath>
-            <impl-class>com.appdynamics.monitors.datapower.DataPowerMonitor</impl-class>
+            <impl-class>com.appdynamics.monitors.datapower.DatRaPowerMonitor</impl-class>
         </java-task>
     </monitor-run-task>
 </monitor>

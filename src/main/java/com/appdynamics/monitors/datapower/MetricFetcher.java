@@ -1,5 +1,5 @@
 /*
- * Copyright 2018. AppDynamics LLC and its affiliates.
+ * Copyright 2020. AppDynamics LLC and its affiliates.
  * All Rights Reserved.
  * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  * The copyright notice above does not evidence any actual or intended publication of such source code.
@@ -7,14 +7,14 @@
 
 package com.appdynamics.monitors.datapower;
 
-import com.appdynamics.extensions.StringUtils;
-import com.appdynamics.extensions.conf.MonitorConfiguration;
+import com.appdynamics.extensions.conf.MonitorContextConfiguration;
 import com.appdynamics.extensions.http.UrlBuilder;
-import com.appdynamics.extensions.util.AggregatedValue;
-import com.appdynamics.extensions.util.AggregationType;
-import com.appdynamics.extensions.util.Aggregator;
-import com.appdynamics.extensions.xml.Xml;
+import com.appdynamics.extensions.metrics.AggregatedValue;
+import com.appdynamics.extensions.metrics.AggregationType;
+import com.appdynamics.extensions.metrics.Aggregator;
+import com.appdynamics.extensions.util.StringUtils;
 import com.appdynamics.monitors.util.SoapMessageUtil;
+import com.appdynamics.monitors.util.Xml;
 import com.google.common.base.Strings;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -28,7 +28,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by abey.tom on 7/31/15.
@@ -38,7 +42,7 @@ public abstract class MetricFetcher implements Runnable {
 
     protected Map server;
     protected SoapMessageUtil soapMessageUtil;
-    protected MonitorConfiguration configuration;
+    protected MonitorContextConfiguration configuration;
     protected DataPowerMonitor metricPrinter;
 
     public void run() {
@@ -66,7 +70,7 @@ public abstract class MetricFetcher implements Runnable {
         } catch (Exception e) {
             String msg = "Exception while running the DataPower task in the server " + uri;
             logger.error(msg, e);
-            configuration.getMetricWriter().registerError(msg, e);
+//            configuration.getMetricWriter().registerError(msg, e);
         }
         if (logger.isDebugEnabled()) {
             logger.debug("Time taken to run the [{}] on server [{}] is {} ms"
@@ -75,7 +79,7 @@ public abstract class MetricFetcher implements Runnable {
     }
 
     protected Stat[] getStats() {
-        Stat.Stats wrapper = (Stat.Stats) this.configuration.getMetricsXmlConfiguration();
+        Stat.Stats wrapper = (Stat.Stats) this.configuration.getMetricsXml();
         if (wrapper != null) {
             return wrapper.getStats();
         } else {
@@ -189,9 +193,9 @@ public abstract class MetricFetcher implements Runnable {
     protected Xml[] getResponse(String operation, String domain) {
         String soapMessage = soapMessageUtil.createSoapMessage(operation, domain);
         String url = UrlBuilder.fromYmlServerConfig(server).build();
-        CloseableHttpResponse response = null;
+            CloseableHttpResponse response = null;
         try {
-            CloseableHttpClient httpClient = configuration.getHttpClient();
+            CloseableHttpClient httpClient = configuration.getContext().getHttpClient();
             logger.debug("The SOAP Request Generated for the domain={} and operation={} is payload={} and url={}"
                     , domain, operation, soapMessage, url);
             HttpPost post = new HttpPost(url);
@@ -209,7 +213,6 @@ public abstract class MetricFetcher implements Runnable {
             String msg = String.format("Error while fetching the data from url=[%s] and payload=[%s]",
                     url, soapMessage);
             logger.error(msg, e);
-            configuration.getMetricWriter().registerError(msg, e);
         } finally {
             if (response != null) {
                 try {
@@ -353,7 +356,7 @@ public abstract class MetricFetcher implements Runnable {
             return this;
         }
 
-        public Builder configuration(MonitorConfiguration configuration) {
+        public Builder configuration(MonitorContextConfiguration configuration) {
             task.configuration = configuration;
             return this;
         }
