@@ -5,12 +5,14 @@
  * The copyright notice above does not evidence any actual or intended publication of such source code.
  */
 
-package com.appdynamics.monitors.datapower;
+package com.appdynamics.extensions.datapower;
 
 import com.appdynamics.extensions.AMonitorJob;
+import com.appdynamics.extensions.MetricWriteHelper;
 import com.appdynamics.extensions.conf.MonitorContextConfiguration;
-import com.appdynamics.monitors.util.SoapMessageUtil;
-import com.appdynamics.monitors.util.TestHelper;
+import com.appdynamics.extensions.datapower.config.Stat;
+import com.appdynamics.extensions.datapower.util.SoapMessageUtil;
+import com.appdynamics.extensions.util.TestHelper;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -74,10 +76,9 @@ public class MetricFetcherTest {
         c.setMetricXml("src/test/resources/metrics/test-metrics.xml",Stat.Stats.class);
         //Create the Task with builder
         DataPowerMonitorTask original = (DataPowerMonitorTask) new MetricFetcher.Builder(false)
-                .server(Collections.singletonMap("uri", "http://localhost:5550/service/mgmt/current"))
-                .configuration(c)
-                .soapMessageUtil(soapMessageUtil)
-                .metricWriter(Mockito.mock(DataPowerMonitor.class))
+                .withServer(Collections.singletonMap("uri", "http://localhost:5550/service/mgmt/current"))
+                .withConfiguration(c)
+                .withSoapMessageUtil(soapMessageUtil)
                 .build();
         DataPowerMonitorTask fetcher = Mockito.spy(original);
 
@@ -101,10 +102,10 @@ public class MetricFetcherTest {
         c.setConfigYml("src/main/resources/conf/config.yml");
         c.setMetricXml("src/test/resources/metrics/test-metrics.xml",Stat.Stats.class);
         DataPowerMonitorTask original = (DataPowerMonitorTask) new MetricFetcher.Builder(false)
-                .server(Collections.singletonMap("uri", "http://localhost:5550/service/mgmt/current"))
-                .configuration(c)
-                .soapMessageUtil(soapMessageUtil)
-                .metricWriter(Mockito.mock(DataPowerMonitor.class))
+                .withServer(Collections.singletonMap("uri", "http://localhost:5550/service/mgmt/current"))
+                .withConfiguration(c)
+                .withSoapMessageUtil(soapMessageUtil)
+                .withMetricWriteHelper(Mockito.mock(MetricWriteHelper.class))
                 .build();
         DataPowerMonitorTask fetcher = Mockito.spy(original);
 

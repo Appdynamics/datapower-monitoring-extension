@@ -1,7 +1,7 @@
-package com.appdynamics.monitors.util;
+package com.appdynamics.extensions.datapower.util;
 
+import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -23,7 +23,7 @@ import javax.xml.xpath.XPathFactory;
  * Time: 9:18 AM
  */
 public class LocalXmlObjectFactory {
-    public static final Logger logger = LoggerFactory.getLogger(LocalXmlObjectFactory.class);
+    private static final Logger logger = ExtensionsLoggerFactory.getLogger(LocalXmlObjectFactory.class);
 
     private static ThreadLocal<DocumentBuilder> builderThreadLocal = new ThreadLocal<DocumentBuilder>() {
         @Override

@@ -5,15 +5,17 @@
  * The copyright notice above does not evidence any actual or intended publication of such source code.
  */
 
-package com.appdynamics.monitors.datapower;
+package com.appdynamics.extensions.datapower;
 
+import com.appdynamics.extensions.MetricWriteHelper;
+import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import com.google.common.collect.Maps;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -28,7 +30,7 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class DataPowerMonitorTest {
-    public static final Logger logger = LoggerFactory.getLogger(DataPowerMonitorTest.class);
+    private static final Logger logger = ExtensionsLoggerFactory.getLogger(DataPowerMonitorTest.class);
     private static final String REQUEST = "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\"><SOAP-ENV:Header/><SOAP-ENV:Body xmlns:dp=\"http://www.datapower.com/schemas/management\"><dp:request><dp:get-status class=\"{0}\"/></dp:request></SOAP-ENV:Body></SOAP-ENV:Envelope>";
     private Map<String, Map<String, String>> expectedDataMap = new HashMap<String, Map<String, String>>();
 
@@ -69,11 +71,11 @@ public class DataPowerMonitorTest {
     public void testServerUseBulkApi() {
         DataPowerMonitor monitor = new DataPowerMonitor();
         Map map = new HashMap();
-        MetricFetcher task = monitor.createTask(map);
+        MetricFetcher task = monitor.createTask(map, Mockito.mock(MetricWriteHelper.class));
         Assert.assertTrue(task instanceof DataPowerMonitorTask);
 
         map.put("useBulkApi", true);
-        task = monitor.createTask(map);
+        task = monitor.createTask(map, Mockito.mock(MetricWriteHelper.class));
         Assert.assertTrue(task instanceof BulkApiMetricFetcher);
 
     }

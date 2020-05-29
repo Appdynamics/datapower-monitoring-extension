@@ -5,9 +5,11 @@
  * The copyright notice above does not evidence any actual or intended publication of such source code.
  */
 
-package com.appdynamics.monitors.util;
+package com.appdynamics.extensions.util;
 
-import com.appdynamics.monitors.datapower.DataPowerMonitor;
+import com.appdynamics.extensions.datapower.DataPowerMonitor;
+import com.appdynamics.extensions.datapower.util.SoapMessageUtil;
+import com.appdynamics.extensions.datapower.util.Xml;
 
 import java.io.InputStream;
 

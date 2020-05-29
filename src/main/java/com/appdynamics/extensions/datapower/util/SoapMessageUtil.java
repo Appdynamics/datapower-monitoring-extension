@@ -5,10 +5,10 @@
  * The copyright notice above does not evidence any actual or intended publication of such source code.
  */
 
-package com.appdynamics.monitors.util;
+package com.appdynamics.extensions.datapower.util;
 
+import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 
 import javax.xml.namespace.QName;
@@ -33,7 +33,7 @@ import java.util.Map;
  * To change this template use File | Settings | File Templates.
  */
 public class SoapMessageUtil {
-    public static final Logger logger = LoggerFactory.getLogger(SoapMessageUtil.class);
+    private static final Logger logger = ExtensionsLoggerFactory.getLogger(SoapMessageUtil.class);
 
     private final MessageFactory messageFactory;
 

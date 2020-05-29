@@ -4,7 +4,7 @@
 
 The IBM® WebSphere® DataPower® SOA Appliance (hereafter called DataPower) is a purpose-built hardware platform designed to simplify, secure, and accelerate XML, Web services, and Enterprise Service Bus deployments.
 
-Please refer to the screeshot link in the Metrics section for the list of reported metrics
+Please refer to the screenshot link in the Metrics section for the list of reported metrics
 
 This extension works only with the standalone machine agent.
 
@@ -89,8 +89,7 @@ You can add/remove metrics of your choice by modifying the provided metrics.xml 
    2. Metric Configuration
     Add the `metric` to be monitored with the metric tag as shown below.
         ```
-                 <metric value-xpath="FreeEncrypted" label="Free Encrypted (MB)" aggregationType="AVERAGE" timeRollUpType="AVERAGE"
-                            clusterRollUpType="COLLECTIVE"/>
+                 <metric value-xpath="FreeEncrypted" label="Free Encrypted (MB)" aggregationType = "OBSERVATION" timeRollUpType = "AVERAGE" clusterRollUpType = "COLLECTIVE"/>
          ```
 For configuring the metrics, the following properties can be used:
 
@@ -125,17 +124,17 @@ Workbench is an inbuilt feature provided with each extension in order to assist 
 3.  **config.yml:** Validate the file [here](http://www.yamllint.com)
 4.  **Special chars in config** If you have special chars(like in passwords) in config.yml, make sure to wrap it in double quotes `""`
 5.  **DataPower SOAP API:** Please update the `user:password` and `datapower:5550` with correct values. Invoke the URL from curl (or wget) and make sure that it is returning data. If it is not, then contact your DataPower Admin with these details
-
-    <pre>curl -u user:password -d '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"><SOAP-ENV:Header/><SOAP-ENV:Body xmlns:dp="http://www.datapower.com/schemas/management"><dp:request domain="default"><dp:get-status class="HTTPMeanTransactionTime"/></dp:request></SOAP-ENV:Body></SOAP-ENV:Envelope>' https://datapower:5550/service/mgmt/current
-    </pre>
+    ```
+        curl -u user:password -d '<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"><SOAP-ENV:Header/><SOAP-ENV:Body xmlns:dp="http://www.datapower.com/schemas/management"><dp:request domain="default"><dp:get-status class="HTTPMeanTransactionTime"/></dp:request></SOAP-ENV:Body></SOAP-ENV:Envelope>' https://datapower:5550/service/mgmt/current
+    ```
 
 6.  **Enable Statistics** Enable Statistics should be set to `enabled` in the DataPower Admin screen.
 7.  **CPU Issue** The issue is the default xml implementation which is bundled with the jdk is trying to read the factory class name from the jar file on every usage. This results in reading all the jar files in the classpath, which shoots up the CPU. Please use the following system properties resolve those. This should be added to machine agenst startup before the -jar argument
-
-    <pre>-Dcom.sun.org.apache.xalan.internal.xsltc.dom.XSLTCDTMManager=com.sun.org.apache.xalan.internal.xsltc.dom.XSLTCDTMManager
-    -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
-    -Dcom.sun.org.apache.xml.internal.dtm.DTMManager=com.sun.org.apache.xml.internal.dtm.ref.DTMManagerDefault
-    </pre>
+    ```
+        -Dcom.sun.org.apache.xalan.internal.xsltc.dom.XSLTCDTMManager=com.sun.org.apache.xalan.internal.xsltc.dom.XSLTCDTMManager
+        -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
+        -Dcom.sun.org.apache.xml.internal.dtm.DTMManager=com.sun.org.apache.xml.internal.dtm.ref.DTMManagerDefault
+    ```
 
 8.  **Metric Limit:** Please start the machine agent with the argument `-Dappdynamics.agent.maxMetrics=5000` if there is a metric limit reached error in the logs. If you dont see the expected metrics, this could be the cause.
 9.  **Check Logs:** There could be some obvious errors in the machine agent logs. Please take a look.

@@ -5,12 +5,16 @@
  * The copyright notice above does not evidence any actual or intended publication of such source code.
  */
 
-package com.appdynamics.monitors.datapower;
+package com.appdynamics.extensions.datapower;
 
+import com.appdynamics.extensions.datapower.config.MetricConfig;
+import com.appdynamics.extensions.datapower.config.Stat;
+import com.appdynamics.extensions.datapower.util.Xml;
+import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
+import com.appdynamics.extensions.metrics.Metric;
 import com.appdynamics.extensions.util.StringUtils;
-import com.appdynamics.monitors.util.Xml;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -18,15 +22,16 @@ import java.util.List;
  * Created by abey.tom on 5/12/15.
  */
 public class DataPowerMonitorTask extends MetricFetcher {
-    public static final Logger logger = LoggerFactory.getLogger(DataPowerMonitorTask.class);
+    private static final Logger logger = ExtensionsLoggerFactory.getLogger(DataPowerMonitorTask.class);
 
     @Override
-    protected void fetchMetrics(List<String> selectedDomains, String serverPrefix) {
+    protected List<Metric> fetchMetrics(List<String> selectedDomains, String serverPrefix) {
+        List<Metric> metricsList = Lists.newArrayList();
         for (String domain : selectedDomains) {
             String domainPrefix = serverPrefix + domain;
             for (Stat stat : getStats()) {
                 if (!"true".equals(stat.getSystemWide())) {
-                    fetchMetrics(domain, domainPrefix, stat);
+                    fetchMetrics(domain, domainPrefix, stat, metricsList);
                 }
             }
         }
@@ -35,23 +40,24 @@ public class DataPowerMonitorTask extends MetricFetcher {
         for (Stat stat : getStats()) {
             if ("true".equals(stat.getSystemWide())) {
                 if(StringUtils.hasText(stat.getUseDomain())){
-                    fetchMetrics(stat.getUseDomain(),prefix,stat);
+                    fetchMetrics(stat.getUseDomain(),prefix,stat, metricsList);
                 } else{
-                    fetchMetrics(domain, prefix, stat);
+                    fetchMetrics(domain, prefix, stat, metricsList);
                 }
             }
         }
+        return metricsList;
     }
 
-    private void fetchMetrics(String domain, String prefix, Stat stat) {
+    private void fetchMetrics(String domain, String prefix, Stat stat, List<Metric> metricsList) {
         String statLabel = getStatLabel(prefix, stat);
         String operation = stat.getName();
-        Metric[] metrics = stat.getMetrics();
-        if (metrics != null && metrics.length > 0) {
+        MetricConfig[] metricConfigs = stat.getMetricConfigs();
+        if (metricConfigs != null && metricConfigs.length > 0) {
             Xml[] response = getResponse(operation, domain);
             response = filter(stat.getFilters(),response);
             if (response != null) {
-                extractData(statLabel, metrics, response, stat);
+                extractData(statLabel, metricConfigs, response, stat, metricsList);
             }
         }
     }

@@ -1,10 +1,10 @@
 ### ANY CHANGES TO THIS FILE DOES NOT REQUIRE A RESTART ###
 
 #This will create this metric in all the tiers, under this path
-#metricPrefix: Custom Metrics|DataPower
+#metricPrefix: Custom Metrics|DataPower|
 
 #This will create it in specific Tier. Replace <TIER_NAME>
-metricPrefix: Server|Component:<TIER_NAME>|Custom Metrics|DataPower
+metricPrefix: Server|Component:<TIER_NAME>|Custom Metrics|DataPower|
 
 servers:
   - uri: http://localhost:5550/service/mgmt/current
@@ -19,7 +19,7 @@ servers:
   - uri: https://someotherhost:5550/service/mgmt/current
     displayName: server2
     username: user
-    passwordEncrypted: C043Fag+LKEZM0AQTWPy2g==
+    encryptedPassword: C043Fag+LKEZM0AQTWPy2g==
     domainsRegex:
       - fin_domain.*
       - .*security.*
@@ -27,7 +27,6 @@ servers:
 
 # number of concurrent tasks
 numberOfThreads: 5
-
 
 connection:
   socketTimeout: 2000
