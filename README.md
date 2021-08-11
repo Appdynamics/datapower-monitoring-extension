@@ -17,10 +17,11 @@ This extension works only with the standalone machine agent.
 
 ## Installation
 
-1. Download and unzip the DataPowerMonitor-2.0.0.zip to the "<MachineAgent_Dir>/monitors" directory.
-2. Edit the file config.yml located at <MachineAgent_Dir>/monitors/DataPowerMonitor The metricPrefix of the extension has to be configured as specified [here](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695#Configuring%20an%20Extension). Please make sure that the right metricPrefix is chosen based on your machine agent deployment, otherwise this could lead to metrics not being visible in the controller.
-3. All metrics to be reported are configured in metrics.xml. Users can remove entries from metrics.xml to stop the metric from reporting, or add new entries as well.
-4. Restart the Machine Agent.
+1. Run `mvn clean install`
+2. Unzip the DataPowerMonitor-VERSION.zip (from targets folder of Datapower Repo) to the "<MachineAgent_Dir>/monitors" directory.
+3. Edit the file config.yml located at <MachineAgent_Dir>/monitors/DataPowerMonitor The metricPrefix of the extension has to be configured as specified [here](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695#Configuring%20an%20Extension). Please make sure that the right metricPrefix is chosen based on your machine agent deployment, otherwise this could lead to metrics not being visible in the controller.
+4. All metrics to be reported are configured in metrics.xml. Users can remove entries from metrics.xml to stop the metric from reporting, or add new entries as well.
+5. Restart the Machine Agent.
 
 Please place the extension in the **"monitors"** directory of your **Machine Agent** installation directory. Do not place the extension in the **"extensions"** directory of your **Machine Agent** installation directory.
 In the AppDynamics Metric Browser, look for **Application Infrastructure Performance|\<Tier\>|Custom Metrics|DataPower** and you should be able to see all the metrics.
@@ -165,18 +166,5 @@ Always feel free to fork and contribute any changes directly here on [GitHub](ht
 |Extension Version         |2.0.0       |
 |Controller Compatibility  |4.5 or Later|
 |Machine Agent Compatibility|4.5.13+    |
-|Last Update               |28/05/2020  |
+|Last Update               |11/08/2021  |
 |Changes list              |[ChangeLog](https://github.com/Appdynamics/datapower-monitoring-extension/blob/master/CHANGELOG.md)|
-
-## Releases
-
-*   1.0.0: Initial Release
-*   1.1.0: Added support to filter by domains
-*   1.1.2: Support for Encryption
-*   1.2.0: Support for domains and domains-regex
-*   1.3.2: Support for multiple DP servers and TLS support
-*   1.3.4: Workbench Support
-*   1.3.5: Http client builder upgrade
-*   1.3.6: Updated the commons library, fixed multiplier issue in metrics.xml
-*   1.3.7: Updated licenses
-*   2.0.0: Revamp to 2.2.3 extension commons.

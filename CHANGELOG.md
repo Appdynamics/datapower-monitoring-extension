@@ -25,6 +25,6 @@
 ### 1.3.7: 
 *  Updated licenses
     
-### 2.0.0 - 29/05/20
-*  Revamp to 2.2.3 extension commons.
+### 2.0.0:
+*  Revamp to 2.2.4 extension commons.
     
