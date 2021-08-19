@@ -1,11 +1,11 @@
 /*
- * Copyright 2018. AppDynamics LLC and its affiliates.
+ * Copyright 2020. AppDynamics LLC and its affiliates.
  * All Rights Reserved.
  * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  * The copyright notice above does not evidence any actual or intended publication of such source code.
  */
 
-package com.appdynamics.monitors.datapower;
+package com.appdynamics.extensions.datapower.config;
 
 import javax.xml.bind.annotation.*;
 
@@ -27,12 +27,9 @@ public class Stat {
     @XmlAttribute(name = "use-domain")
     private String useDomain;
     @XmlElement(name = "metric")
-    private Metric[] metrics;
+    private MetricConfig[] metricConfigs;
     @XmlElement(name = "filter")
     private String[] filters;
-
-    @XmlAttribute(name = "metric-type")
-    private MetricType metricType;
 
     public String getName() {
         return name;
@@ -50,20 +47,12 @@ public class Stat {
         this.label = label;
     }
 
-    public Metric[] getMetrics() {
-        return metrics;
+    public MetricConfig[] getMetricConfigs() {
+        return metricConfigs;
     }
 
-    public void setMetrics(Metric[] metrics) {
-        this.metrics = metrics;
-    }
-
-    public MetricType getMetricType() {
-        return metricType;
-    }
-
-    public void setMetricType(MetricType metricType) {
-        this.metricType = metricType;
+    public void setMetricConfigs(MetricConfig[] metricConfigs) {
+        this.metricConfigs = metricConfigs;
     }
 
     public String getSystemWide() {

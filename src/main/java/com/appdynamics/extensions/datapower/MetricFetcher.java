@@ -1,21 +1,26 @@
 /*
- * Copyright 2018. AppDynamics LLC and its affiliates.
+ * Copyright 2020. AppDynamics LLC and its affiliates.
  * All Rights Reserved.
  * This is unpublished proprietary source code of AppDynamics LLC and its affiliates.
  * The copyright notice above does not evidence any actual or intended publication of such source code.
  */
 
-package com.appdynamics.monitors.datapower;
+package com.appdynamics.extensions.datapower;
 
-import com.appdynamics.extensions.StringUtils;
-import com.appdynamics.extensions.conf.MonitorConfiguration;
+import com.appdynamics.extensions.MetricWriteHelper;
+import com.appdynamics.extensions.conf.MonitorContextConfiguration;
+import com.appdynamics.extensions.datapower.config.MetricConfig;
+import com.appdynamics.extensions.datapower.config.Stat;
+import com.appdynamics.extensions.datapower.util.Constants;
+import com.appdynamics.extensions.datapower.util.SoapMessageUtil;
+import com.appdynamics.extensions.datapower.util.Xml;
 import com.appdynamics.extensions.http.UrlBuilder;
-import com.appdynamics.extensions.util.AggregatedValue;
-import com.appdynamics.extensions.util.AggregationType;
-import com.appdynamics.extensions.util.Aggregator;
-import com.appdynamics.extensions.xml.Xml;
-import com.appdynamics.monitors.util.SoapMessageUtil;
+import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
+import com.appdynamics.extensions.metrics.Metric;
+import com.appdynamics.extensions.util.StringUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -23,42 +28,48 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.*;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by abey.tom on 7/31/15.
  */
 public abstract class MetricFetcher implements Runnable {
-    public static final Logger logger = LoggerFactory.getLogger(MetricFetcher.class);
+    private static final Logger logger = ExtensionsLoggerFactory.getLogger(MetricFetcher.class);
 
     protected Map server;
     protected SoapMessageUtil soapMessageUtil;
-    protected MonitorConfiguration configuration;
-    protected DataPowerMonitor metricPrinter;
+    protected MonitorContextConfiguration configuration;
+    protected MetricWriteHelper metricWriteHelper;
+    private BigInteger heartBeatValue = BigInteger.ZERO;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     public void run() {
         long time = System.currentTimeMillis();
         String uri = (String) server.get("uri");
+        List<Metric> metrics = Lists.newArrayList();
         try {
             if (!Strings.isNullOrEmpty(uri)) {
-                String displayName = (String) server.get("displayName");
+                String displayName = (String) server.get(Constants.DISPLAY_NAME);
                 String serverPrefix;
                 if (!Strings.isNullOrEmpty(displayName)) {
-                    serverPrefix = configuration.getMetricPrefix() + "|" + displayName + "|";
+                    serverPrefix = configuration.getMetricPrefix() + Constants.METRIC_SEPARATOR + displayName + Constants.METRIC_SEPARATOR;
                 } else {
-                    serverPrefix = configuration.getMetricPrefix() + "|";
+                    serverPrefix = configuration.getMetricPrefix() + Constants.METRIC_SEPARATOR;
                 }
                 logger.debug("Fetching metrics for the server uri [{}], metricPrefix =[{}]", uri, serverPrefix);
                 List<String> selectedDomains = getSelectedDomains();
                 if (!selectedDomains.isEmpty()) {
-                    fetchMetrics(selectedDomains, serverPrefix);
+                    metrics = fetchMetrics(selectedDomains, serverPrefix);
+                    if(metrics.size() > 0)
+                       heartBeatValue = BigInteger.ONE;
                 } else {
-                    logger.error("Cannot match/filter the domains based on the properties 'domains-regex' or 'domains'");
+                    logger.debug("Cannot match/filter the domains based on the properties 'domains-regex' or 'domains'");
                 }
             } else {
                 logger.error("The url is empty for the server {}", server);
@@ -66,7 +77,10 @@ public abstract class MetricFetcher implements Runnable {
         } catch (Exception e) {
             String msg = "Exception while running the DataPower task in the server " + uri;
             logger.error(msg, e);
-            configuration.getMetricWriter().registerError(msg, e);
+        }finally {
+            Metric heartBeat = new Metric("HeartBeat", String.valueOf(heartBeatValue), configuration.getMetricPrefix() + Constants.METRIC_SEPARATOR + Constants.HEARTBEAT);
+            metrics.add(heartBeat);
+            metricWriteHelper.transformAndPrintMetrics(metrics);
         }
         if (logger.isDebugEnabled()) {
             logger.debug("Time taken to run the [{}] on server [{}] is {} ms"
@@ -75,7 +89,7 @@ public abstract class MetricFetcher implements Runnable {
     }
 
     protected Stat[] getStats() {
-        Stat.Stats wrapper = (Stat.Stats) this.configuration.getMetricsXmlConfiguration();
+        Stat.Stats wrapper = (Stat.Stats) this.configuration.getMetricsXml();
         if (wrapper != null) {
             return wrapper.getStats();
         } else {
@@ -83,37 +97,15 @@ public abstract class MetricFetcher implements Runnable {
         }
     }
 
-    protected abstract void fetchMetrics(List<String> selectedDomains, String serverPrefix);
+    protected abstract List<Metric> fetchMetrics(List<String> selectedDomains, String serverPrefix);
 
-    protected MetricType getMetricType(Metric metric, Stat stat) {
-        if (metric.getMetricType() != null) {
-            return metric.getMetricType();
-        } else if (stat.getMetricType() != null) {
-            return stat.getMetricType();
-        } else {
-            return null;
-        }
-    }
-
-    protected String multiply(String value, BigDecimal multiplier) {
-        if (StringUtils.hasText(value)) {
-            if (multiplier != null) {
-                BigDecimal multiply = new BigDecimal(value).multiply(multiplier);
-                return multiply.setScale(0, RoundingMode.HALF_UP).toString();
-            } else {
-                return new BigDecimal(value).setScale(0, RoundingMode.HALF_UP).toString();
-            }
-        }
-        return null;
-    }
-
-    protected String getLabel(Xml xml, Metric metric) {
+    protected String getLabel(Xml xml, MetricConfig metricConfig) {
         String label = "";
-        if (metric.getLabel() != null) {
-            label = metric.getLabel();
-        } else if (metric.getLabelXpath() != null) {
-            String labelXpath = metric.getLabelXpath();
-            String delim = StringUtils.hasText(metric.getLabelDelim()) ? metric.getLabelDelim() : "_";
+        if (metricConfig.getLabel() != null) {
+            label = metricConfig.getLabel();
+        } else if (metricConfig.getLabelXpath() != null) {
+            String labelXpath = metricConfig.getLabelXpath();
+            String delim = StringUtils.hasText(metricConfig.getLabelDelim()) ? metricConfig.getLabelDelim() : "_";
             if (labelXpath.contains(",")) {
                 String[] split = labelXpath.split(",");
                 StringBuilder sb = new StringBuilder();
@@ -122,7 +114,7 @@ public abstract class MetricFetcher implements Runnable {
                     if (StringUtils.hasText(text)) {
                         sb.append(text).append(delim);
                     } else {
-                        logger.warn("The xpath {} to get the label returned nothing", xpath);
+                        logger.debug("The xpath {} to get the label returned nothing", xpath);
                     }
                 }
                 if (sb.length() > 0) {
@@ -130,14 +122,14 @@ public abstract class MetricFetcher implements Runnable {
                 }
                 label = sb.toString();
             } else {
-                label = xml.getText(metric.getLabelXpath());
+                label = xml.getText(metricConfig.getLabelXpath());
             }
         }
-        if (metric.getLabelPrefix() != null) {
-            label = metric.getLabelPrefix() + label;
+        if (metricConfig.getLabelPrefix() != null) {
+            label = metricConfig.getLabelPrefix() + label;
         }
-        if (metric.getLabelSuffix() != null) {
-            label = label + metric.getLabelSuffix();
+        if (metricConfig.getLabelSuffix() != null) {
+            label = label + metricConfig.getLabelSuffix();
         }
         return label.trim();
     }
@@ -189,9 +181,9 @@ public abstract class MetricFetcher implements Runnable {
     protected Xml[] getResponse(String operation, String domain) {
         String soapMessage = soapMessageUtil.createSoapMessage(operation, domain);
         String url = UrlBuilder.fromYmlServerConfig(server).build();
-        CloseableHttpResponse response = null;
+            CloseableHttpResponse response = null;
         try {
-            CloseableHttpClient httpClient = configuration.getHttpClient();
+            CloseableHttpClient httpClient = configuration.getContext().getHttpClient();
             logger.debug("The SOAP Request Generated for the domain={} and operation={} is payload={} and url={}"
                     , domain, operation, soapMessage, url);
             HttpPost post = new HttpPost(url);
@@ -209,7 +201,6 @@ public abstract class MetricFetcher implements Runnable {
             String msg = String.format("Error while fetching the data from url=[%s] and payload=[%s]",
                     url, soapMessage);
             logger.error(msg, e);
-            configuration.getMetricWriter().registerError(msg, e);
         } finally {
             if (response != null) {
                 try {
@@ -231,54 +222,27 @@ public abstract class MetricFetcher implements Runnable {
         return statLabel;
     }
 
-    protected void extractData(String metricPrefix, Metric[] metrics, Xml[] response, Stat stat) {
-        Aggregator<Metric> aggregator = new Aggregator<Metric>();
+    protected void extractData(String metricPrefix, MetricConfig[] metricConfigs, Xml[] response, Stat stat, List<Metric> metricsList) {
         for (Xml xml : response) {
-            for (Metric metric : metrics) {
-                Map<String, String> converterMap = getConverterMap(metric);
-                String valueXpath = metric.getValueXpath();
+            for (MetricConfig metricConfig : metricConfigs) {
+                String valueXpath = metricConfig.getValueXpath();
                 if (StringUtils.hasText(valueXpath)) {
                     String value = xml.getText(valueXpath);
                     if (StringUtils.hasText(value)) {
-                        value = convertIfNeeded(value, converterMap, metric);
-                        value = multiply(value, metric.getMultiplier());
-                        if (metric.getAggregateLabel() != null) {
-                            aggregator.add(metric, value);
-                        }
-                        String label = getLabel(xml, metric);
+                        String label = getLabel(xml, metricConfig);
                         if (StringUtils.hasText(label)) {
                             label = metricPrefix + "|" + StringUtils.trim(label, "|");
                         } else {
-                            label = metricPrefix + "|" + valueXpath.replace("\\W", "");
+                            valueXpath = valueXpath.replace("\\W", "");
+                            label = metricPrefix + "|" + valueXpath;
                         }
-                        metricPrinter.printMetric(label, value, getMetricType(metric, stat));
+                        Metric metric = new Metric(valueXpath, value, label, objectMapper.convertValue(metricConfig, Map.class));
+                        metricsList.add(metric);
                     } else {
-                        BulkApiMetricFetcher.logger.warn("The value fetched by xpath={} is empty for the xml={}", valueXpath, xml);
+                        logger.debug("The value fetched by xpath={} is empty for the xml={}", valueXpath, xml);
                     }
                 } else {
-                    BulkApiMetricFetcher.logger.error("The value-xpath is null for the metric {}", metric);
-                }
-            }
-        }
-        if (!aggregator.isEmpty()) {
-            for (Metric metric : metrics) {
-                AggregatedValue aggregate = aggregator.get(metric);
-                if (aggregate != null) {
-                    BigDecimal value = null;
-                    if (AggregationType.AVERAGE.equals(metric.getAggregationType())) {
-                        value = aggregate.getAverage();
-                    } else {
-                        value = aggregate.getSum();
-                    }
-                    if (value != null) {
-                        String label = StringUtils.trim(metric.getAggregateLabel(), "|");
-                        String metricPath = metricPrefix + "|" + label;
-                        if (metric.getMultiplier() != null) {
-                            value = value.multiply(metric.getMultiplier());
-                        }
-                        String valueStr = value.setScale(0, RoundingMode.HALF_UP).toString();
-                        metricPrinter.printMetric(metricPath, valueStr, getMetricType(metric, stat));
-                    }
+                    logger.error("The value-xpath is null for the metric {}", metricConfig);
                 }
             }
         }
@@ -293,42 +257,12 @@ public abstract class MetricFetcher implements Runnable {
                 if (xml != null) {
                     filtered.add(xml);
                 } else {
-                    logger.warn("The filter {} didn't return any node", filter);
+                    logger.debug("The filter {} didn't return any node", filter);
                 }
             }
             return filtered.toArray(new Xml[]{});
         } else {
             return response;
-        }
-    }
-
-    private String convertIfNeeded(String value, Map<String, String> converterMap, Metric metric) {
-        if (converterMap != null) {
-            String converted = converterMap.get(value);
-            if (StringUtils.hasText(converted)) {
-                return converted;
-            } else if (converterMap.containsKey("$default")) {
-                return converterMap.get("$default");
-            } else {
-                logger.error("For the {}, the converter map {} has no value for [{}]"
-                        , metric, converterMap, value);
-                return value;
-            }
-        }
-        return value;
-    }
-
-
-    private Map<String, String> getConverterMap(Metric metric) {
-        MetricConverter[] converters = metric.getConverters();
-        if (converters != null && converters.length > 0) {
-            Map<String, String> map = new HashMap<String, String>();
-            for (MetricConverter converter : converters) {
-                map.put(converter.getLabel(), converter.getValue());
-            }
-            return map;
-        } else {
-            return null;
         }
     }
 
@@ -343,28 +277,28 @@ public abstract class MetricFetcher implements Runnable {
             }
         }
 
-        public Builder server(Map server) {
+        public Builder withServer(Map server) {
             task.server = server;
             return this;
         }
 
-        public Builder soapMessageUtil(SoapMessageUtil soapMessageUtil) {
+        public Builder withSoapMessageUtil(SoapMessageUtil soapMessageUtil) {
             task.soapMessageUtil = soapMessageUtil;
             return this;
         }
 
-        public Builder configuration(MonitorConfiguration configuration) {
+        public Builder withConfiguration(MonitorContextConfiguration configuration) {
             task.configuration = configuration;
+            return this;
+        }
+
+        public Builder withMetricWriteHelper(MetricWriteHelper metricWriteHelper){
+            task.metricWriteHelper = metricWriteHelper;
             return this;
         }
 
         public MetricFetcher build() {
             return task;
-        }
-
-        public Builder metricWriter(DataPowerMonitor dataPowerMonitor) {
-            task.metricPrinter = dataPowerMonitor;
-            return this;
         }
     }
 }
