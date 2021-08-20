@@ -1,4 +1,4 @@
-# AppDynamics Monitoring Extension for use with DataPower
+# Datapower Monitoring Extension
 
 ## Use Case
 
