@@ -120,7 +120,7 @@ Workbench is an inbuilt feature provided with each extension in order to assist 
 
 ## Troubleshooting
 
-1.  Please look at the [troubleshooting document](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695) and make sure that everything is followed correctly.
+1.  Please follow the steps listed in this [troubleshooting document](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695) in order to troubleshoot your issue. These are a set of common issues that customers might have faced during the installation of the extension.
 2.  **Verify Machine Agent Data:** Please start the Machine Agent without the extension and make sure that it reports data. Verify that the machine agent status is UP and it is reporting Hardware Metrics
 3.  **config.yml:** Validate the file [here](http://www.yamllint.com)
 4.  **Special chars in config** If you have special chars(like in passwords) in config.yml, make sure to wrap it in double quotes `""`
@@ -130,7 +130,7 @@ Workbench is an inbuilt feature provided with each extension in order to assist 
     ```
 
 6.  **Enable Statistics** Enable Statistics should be set to `enabled` in the DataPower Admin screen.
-7.  **CPU Issue** The issue is the default xml implementation which is bundled with the jdk is trying to read the factory class name from the jar file on every usage. This results in reading all the jar files in the classpath, which shoots up the CPU. Please use the following system properties resolve those. This should be added to machine agenst startup before the -jar argument
+7.  **CPU Issue** The issue is the default xml implementation which is bundled with the jdk is trying to read the factory class name from the jar file on every usage. This results in reading all the jar files in the classpath, which shoots up the CPU. Please use the following system properties resolve those. This should be added to machine agent startup before the -jar argument
     ```
         -Dcom.sun.org.apache.xalan.internal.xsltc.dom.XSLTCDTMManager=com.sun.org.apache.xalan.internal.xsltc.dom.XSLTCDTMManager
         -Djavax.xml.transform.TransformerFactory=com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl
@@ -139,23 +139,6 @@ Workbench is an inbuilt feature provided with each extension in order to assist 
 
 8.  **Metric Limit:** Please start the machine agent with the argument `-Dappdynamics.agent.maxMetrics=5000` if there is a metric limit reached error in the logs. If you dont see the expected metrics, this could be the cause.
 9.  **Check Logs:** There could be some obvious errors in the machine agent logs. Please take a look.
-10.  **Collect Debug Logs:** Edit the file, `<MachineAgent>/conf/logging/log4j.xml` and update the level of the appender `com.appdynamics` to debug Let it run for 5-10 minutes and attach the logs to a support ticket
-
-## Support Tickets
-If after going through the [Troubleshooting Document](https://community.appdynamics.com/t5/Knowledge-Base/How-to-troubleshoot-missing-custom-metrics-or-extensions-metrics/ta-p/28695) you have not been able to get your extension working, please file a ticket and add the following information.
-
-Please provide the following in order for us to assist you better.
-
-    1. Stop the running machine agent.
-    2. Delete all existing logs under <MachineAgent>/logs.
-    3. Please enable debug logging by editing the file <MachineAgent>/conf/logging/log4j.xml. Change the level value of the following <logger> elements to debug.
-        <logger name="com.singularity">
-        <logger name="com.appdynamics">
-    4. Start the machine agent and please let it run for 10 mins. Then zip and upload all the logs in the directory <MachineAgent>/logs/*.
-    5. Attach the zipped <MachineAgent>/conf/* directory here.
-    6. Attach the zipped <MachineAgent>/monitors/ExtensionFolderYouAreHavingIssuesWith directory here.
-
-For any support related questions, you can also contact help@appdynamics.com.
 
 ## Contributing
 Always feel free to fork and contribute any changes directly here on [GitHub](https://github.com/Appdynamics/datapower-monitoring-extension).
