@@ -122,7 +122,7 @@ Workbench is an inbuilt feature provided with each extension in order to assist 
 
 1.  Please follow the steps listed in this [troubleshooting document](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695) in order to troubleshoot your issue. These are a set of common issues that customers might have faced during the installation of the extension.
 2.  **Verify Machine Agent Data:** Please start the Machine Agent without the extension and make sure that it reports data. Verify that the machine agent status is UP and it is reporting Hardware Metrics
-3.  **config.yml:** Validate the file [here](http://www.yamllint.com)
+3.  **config.yml:** Validate the file [here](https://jsonformatter.org/yaml-validator)
 4.  **Special chars in config** If you have special chars(like in passwords) in config.yml, make sure to wrap it in double quotes `""`
 5.  **DataPower SOAP API:** Please update the `user:password` and `datapower:5550` with correct values. Invoke the URL from curl (or wget) and make sure that it is returning data. If it is not, then contact your DataPower Admin with these details
     ```
