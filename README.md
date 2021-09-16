@@ -17,7 +17,7 @@ This extension works only with the standalone machine agent.
 
 ## Installation
 
-1. Run `mvn clean install`
+1. Run `mvn clean install` from "DataPowerMonitorRepo"
 2. Unzip the DataPowerMonitor-VERSION.zip (from targets folder of Datapower Repo) to the "<MachineAgent_Dir>/monitors" directory.
 3. Edit the file config.yml located at <MachineAgent_Dir>/monitors/DataPowerMonitor The metricPrefix of the extension has to be configured as specified [here](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695#Configuring%20an%20Extension). Please make sure that the right metricPrefix is chosen based on your machine agent deployment, otherwise this could lead to metrics not being visible in the controller.
 4. All metrics to be reported are configured in metrics.xml. Users can remove entries from metrics.xml to stop the metric from reporting, or add new entries as well.
