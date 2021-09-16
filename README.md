@@ -24,7 +24,6 @@ This extension works only with the standalone machine agent.
 5. Restart the Machine Agent.
 
 Please place the extension in the **"monitors"** directory of your **Machine Agent** installation directory. Do not place the extension in the **"extensions"** directory of your **Machine Agent** installation directory.
-In the AppDynamics Metric Browser, look for **Application Infrastructure Performance|\<Tier\>|Custom Metrics|DataPower** and you should be able to see all the metrics.
 
 ## Configuration
 ### Config.yml
@@ -36,6 +35,8 @@ Configure the extension by editing the config.yml file in `<MACHINE_AGENT_HOME>/
        ```
        metricPrefix: "Server|Component:100|Custom Metrics|DataPower|"
        ```
+  More details around metric prefix can be found [here](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695).
+  
   2.  **Server Details**
         ```
                 servers:
@@ -58,7 +59,7 @@ Configure the extension by editing the config.yml file in `<MACHINE_AGENT_HOME>/
                     useBulkApi: true
         ```
 
-If `passwordEncrypted` is used, make sure to update the `encryptionKey` in `config.yml`. Please [refer here](Please read the extension documentation to generate encrypted password. https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-use-Password-Encryption-with-Extensions/ta-p/29397) for more details.
+If `encryptedPassword` is used, make sure to update the `encryptionKey` in `config.yml`. Please [refer here](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-use-Password-Encryption-with-Extensions/ta-p/29397) for more details on password encryption.
 
    3.  **Domains** You have to set the domains from which you need the data from. You can choose between the properties `domains` or `domainsRegex`. If you dont know the domain name use `default` as shown.
     
@@ -97,9 +98,9 @@ For configuring the metrics, the following properties can be used:
  |     Property      |   Default value |         Possible values         |                                               Description                                                      |
  | ----------------- | --------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------- |
  | alias             | metric name     | Any string                      | The substitute name to be used in the metric browser instead of metric name.                                   |
- | aggregationType   | "AVERAGE"       | "AVERAGE", "SUM", "OBSERVATION" | [Aggregation qualifier](https://docs.appdynamics.com/display/PRO44/Build+a+Monitoring+Extension+Using+Java)    |
- | timeRollUpType    | "AVERAGE"       | "AVERAGE", "SUM", "CURRENT"     | [Time roll-up qualifier](https://docs.appdynamics.com/display/PRO44/Build+a+Monitoring+Extension+Using+Java)   |
- | clusterRollUpType | "INDIVIDUAL"    | "INDIVIDUAL", "COLLECTIVE"      | [Cluster roll-up qualifier](https://docs.appdynamics.com/display/PRO44/Build+a+Monitoring+Extension+Using+Java)|
+ | aggregationType   | "AVERAGE"       | "AVERAGE", "SUM", "OBSERVATION" | [Aggregation qualifier](https://docs.appdynamics.com/display/latest/Build+a+Monitoring+Extension+Using+Java)    |
+ | timeRollUpType    | "AVERAGE"       | "AVERAGE", "SUM", "CURRENT"     | [Time roll-up qualifier](https://docs.appdynamics.com/display/latest/Build+a+Monitoring+Extension+Using+Java)   |
+ | clusterRollUpType | "INDIVIDUAL"    | "INDIVIDUAL", "COLLECTIVE"      | [Cluster roll-up qualifier](https://docs.appdynamics.com/display/latest/Build+a+Monitoring+Extension+Using+Java)|
  | multiplier        | 1               | Any number                      | Value with which the metric needs to be multiplied.                                                            |
  | convert           | null            | Any key value map               | Set of key value pairs that indicates the value to which the metrics need to be transformed. eg: UP:1, OPEN:1  |
  | delta             | false           | true, false                     | If enabled, gives the delta values of metrics instead of actual values.                                        |
@@ -109,7 +110,7 @@ For configuring the metrics, the following properties can be used:
 
 ## Metrics
 
-The metrics will be reported under the tree `Application Infrastructure Performance|$TIER|Custom Metrics|DataPower`
+All the metrics reported by the extension are listed in metrics.xml file located at `<MAHome>/monitors/<DatapowerMonitor>/metrics.xml`. Please take a look at it to see what all metrics this extension can report.
 
 ## Credentials Encryption
 
@@ -147,7 +148,7 @@ Always feel free to fork and contribute any changes directly here on [GitHub](ht
 |          Name            |  Version   |
 |--------------------------|------------|
 |Extension Version         |2.0.0       |
-|Controller Compatibility  |4.5 or Later|
-|Machine Agent Compatibility|4.5.13+    |
 |Last Update               |11/08/2021  |
 |Changes list              |[ChangeLog](https://github.com/Appdynamics/datapower-monitoring-extension/blob/master/CHANGELOG.md)|
+
+**Note**: While extensions are maintained and supported by customers under the open-source licensing model, they interact with agents and Controllers that are subject to [AppDynamics’ maintenance and support policy](https://docs.appdynamics.com/latest/en/product-and-release-announcements/maintenance-support-for-software-versions). Some extensions have been tested with AppDynamics 4.5.13+ artifacts, but you are strongly recommended against using versions that are no longer supported.
