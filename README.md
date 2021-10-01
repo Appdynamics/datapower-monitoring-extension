@@ -11,17 +11,18 @@ This extension works only with the standalone machine agent.
 ## Prerequisites
 
 1.  Before the extension is installed, the prerequisites mentioned [here](https://community.appdynamics.com/t5/Knowledge-Base/Extensions-Prerequisites-Guide/ta-p/35213) need to be met. Please do not proceed with the extension installation if the specified prerequisites are not met.
-2.  The DataPower XML Management Interface must be enabled. The DataPower Monitor uses the `"/service/mgmt/current"` SOAP Endpoint to collect the metrics. Please refer to the IBM Redbook WebSphere [DataPower SOA Appliance: The XML Management Interface](http://www.redbooks.ibm.com/redpapers/pdfs/redp4446.pdf) Section 1.3, 1.4 and 1.5 to enable it.
-3.  Make sure that the user has permissions to invoke the API. Refer troubleshooting section 5-6 for more details
-4.  Start the Machine Agent before installing the extension and make sure that it is reporting the data fine.
+2.  Download and install [Apache Maven](https://maven.apache.org/) which is configured with `Java 8` to build the extension artifact from source. You can check the java version used in maven using command `mvn -v` or `mvn --version`. If your maven is using some other java version then please download java 8 for your platform and set JAVA_HOME parameter before starting maven.
+3.  The DataPower XML Management Interface must be enabled. The DataPower Monitor uses the `"/service/mgmt/current"` SOAP Endpoint to collect the metrics. Please refer to the IBM Redbook WebSphere [DataPower SOA Appliance: The XML Management Interface](http://www.redbooks.ibm.com/redpapers/pdfs/redp4446.pdf) Section 1.3, 1.4 and 1.5 to enable it.
+4.  Make sure that the user has permissions to invoke the API. Refer troubleshooting section 5-6 for more details
+5.  Start the Machine Agent before installing the extension and make sure that it is reporting the data fine.
 
 ## Installation
-
-1. Run `mvn clean install` from "DataPowerMonitorRepo"
-2. Unzip the DataPowerMonitor-VERSION.zip (from targets folder of Datapower Repo) to the "<MachineAgent_Dir>/monitors" directory.
-3. Edit the file config.yml located at <MachineAgent_Dir>/monitors/DataPowerMonitor The metricPrefix of the extension has to be configured as specified [here](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695#Configuring%20an%20Extension). Please make sure that the right metricPrefix is chosen based on your machine agent deployment, otherwise this could lead to metrics not being visible in the controller.
-4. All metrics to be reported are configured in metrics.xml. Users can remove entries from metrics.xml to stop the metric from reporting, or add new entries as well.
-5. Restart the Machine Agent.
+1. Clone the "datapower-monitoring-extension" repo using `git clone <repoUrl>` command.
+2. Run `mvn clean install` from "datapower-monitoring-extension"
+3. Unzip the DataPowerMonitor-VERSION.zip (from targets folder of Datapower Repo) to the "<MachineAgent_Dir>/monitors" directory.
+4. Edit the file config.yml located at <MachineAgent_Dir>/monitors/DataPowerMonitor The metricPrefix of the extension has to be configured as specified [here](https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695#Configuring%20an%20Extension). Please make sure that the right metricPrefix is chosen based on your machine agent deployment, otherwise this could lead to metrics not being visible in the controller.
+5. All metrics to be reported are configured in metrics.xml. Users can remove entries from metrics.xml to stop the metric from reporting, or add new entries as well.
+6. Restart the Machine Agent.
 
 Please place the extension in the **"monitors"** directory of your **Machine Agent** installation directory. Do not place the extension in the **"extensions"** directory of your **Machine Agent** installation directory.
 
