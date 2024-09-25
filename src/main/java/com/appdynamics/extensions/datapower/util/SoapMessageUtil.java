@@ -124,10 +124,10 @@ public class SoapMessageUtil {
     }
 
     private String getResponseContent(String operation, String xmlStr) {
-        int start = xmlStr.indexOf("<" + operation+" ");
+        Integer start = Integer.valueOf(xmlStr.indexOf("<" + operation+" "));
         if (start != -1) {
             String xmlClose = "</" + operation + ">";
-            int end = xmlStr.lastIndexOf(xmlClose);
+            Integer end = Integer.valueOf(xmlStr.lastIndexOf(xmlClose));
             if (end != -1 && end > start) {
                 logger.trace("The start is {} and end is {}", start, end);
                 return xmlStr.substring(start, end + xmlClose.length());

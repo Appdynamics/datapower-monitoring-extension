@@ -14,9 +14,8 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.bio.SocketConnector;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
@@ -67,7 +66,7 @@ public class MockDataPowerServer {
             server.stop();
         }
         server = new Server();
-        SocketConnector connector = new SocketConnector();
+        ServerConnector connector = new ServerConnector(server);
         int port = 5550;
         connector.setPort(port);
         server.setConnectors(new Connector[]{connector});
@@ -83,12 +82,12 @@ public class MockDataPowerServer {
 //        factory.setExcludeProtocols("TLSv1.1","TLSv1.0");
         factory.setKeyStoreResource(Resource.newClassPathResource("/keystore/keystore.jks"));
         factory.setKeyStorePassword("changeit");
-        SslSelectChannelConnector connector = new SslSelectChannelConnector(factory);
         if (server != null) {
             server.stop();
         }
-        server = new Server();
         int port = 5550;
+        server = new Server(port);
+        ServerConnector connector = new ServerConnector(server, factory);
         connector.setPort(port);
         server.setConnectors(new Connector[]{connector});
         server.setHandler(new DelegateHandler());
