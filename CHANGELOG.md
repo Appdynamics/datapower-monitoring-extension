@@ -29,4 +29,7 @@
     
 ### 2.0.0:
 *  Revamp to 2.2.4 extension commons.
+
+### 2.0.1:
+*  Updated extension commons to 2.2.13.
     
