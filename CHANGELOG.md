@@ -32,4 +32,6 @@
 
 ### 2.0.1:
 *  Updated extension commons to 2.2.13.
-    
+
+### 3.0.0:
+*  Ported to machine agents shipping Java 11, which is now a minimum requirement.
