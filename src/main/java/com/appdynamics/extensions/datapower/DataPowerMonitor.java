@@ -37,10 +37,6 @@ public class DataPowerMonitor extends ABaseMonitor {
 
     private MonitorContextConfiguration configuration;
 
-    public DataPowerMonitor() {
-        soapMessageUtil = new SoapMessageUtil();
-    }
-
     protected String getDefaultMetricPrefix() {
         return METRIC_PREFIX;
     }
@@ -98,6 +94,9 @@ public class DataPowerMonitor extends ABaseMonitor {
         configuration = getContextConfiguration();
         logger.info("initializing metric.xml file");
         configuration.setMetricXml(args.get("metric-file"), Stat.Stats.class);
+
+        // Keep this here instead of the constructor to ensure the proper class loader is used.
+        soapMessageUtil = new SoapMessageUtil();
     }
 
     private boolean useBulkApi(Map server) {
