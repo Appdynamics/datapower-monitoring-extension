@@ -15,6 +15,7 @@ import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import com.appdynamics.extensions.metrics.Metric;
 import com.appdynamics.extensions.util.StringUtils;
 import com.google.common.collect.Lists;
+import org.apache.http.ParseException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -104,12 +105,18 @@ public class BulkApiMetricFetcher extends MetricFetcher {
         String soapMessage = soapMessageUtil.createSoapMessage(operations, domain);
         String url = UrlBuilder.fromYmlServerConfig(server).build();
         CloseableHttpResponse response = null;
+        StringEntity entity = null;
         try {
             CloseableHttpClient httpClient = configuration.getContext().getHttpClient();
             logger.debug("The SOAP Request Generated for the domain={} and operation={} is payload={} and url={}"
                     , domain, operations, soapMessage,url);
             HttpPost post = new HttpPost(url);
-            StringEntity entity = new StringEntity(soapMessage, ContentType.TEXT_XML);
+            post.setHeader("User-Agent", "curl/7.61.1");
+            post.setHeader("Accept", "*/*");
+            post.removeHeaders("Accept-Encoding");
+            post.setHeader("Connection", "close");
+
+            entity = new StringEntity(soapMessage, ContentType.TEXT_XML);
             post.setEntity(entity);
             response = httpClient.execute(post);
             String responseStr = EntityUtils.toString(response.getEntity());
@@ -123,6 +130,20 @@ public class BulkApiMetricFetcher extends MetricFetcher {
         } catch (Exception e) {
             String msg = String.format("Error while fetching the data from absolute url=[%s] and payload=[%s]"
                     , url, soapMessage);
+            if (entity != null){
+                logger.error("Entity: " + entity);
+                try {
+                    String body = EntityUtils.toString(entity);
+                    logger.error("Entity body: {}", body);
+                } catch (ParseException ex) {
+                    logger.error("Failed to parse HttpEntity to String", ex);
+                } catch (IOException ex) {
+                    logger.error("I/O error while reading HttpEntity", ex);
+                }
+            }
+            else{
+                logger.error("Entity is null");
+            }
             logger.error(msg, e);
         } finally {
             if (response != null) {
