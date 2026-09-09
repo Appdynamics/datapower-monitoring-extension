@@ -30,6 +30,8 @@ public class LocalXmlObjectFactory {
         protected DocumentBuilder initialValue() {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             try {
+                // Disable DOCTYPE declarations to prevent XXE. DataPower status responses never contain one.
+                factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
                 return factory.newDocumentBuilder();
             } catch (ParserConfigurationException e) {
                 logger.error("Error while creating the Document Builder", e);

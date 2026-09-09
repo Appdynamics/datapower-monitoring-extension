@@ -11,22 +11,23 @@ import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import com.google.common.base.Strings;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
-import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
+import java.nio.ByteBuffer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -69,27 +70,34 @@ public class MockDataPowerServer {
         ServerConnector connector = new ServerConnector(server);
         int port = 5550;
         connector.setPort(port);
-        server.setConnectors(new Connector[]{connector});
+        server.setConnectors(new org.eclipse.jetty.server.Connector[]{connector});
         server.setHandler(new DelegateHandler());
         logger.info("Starting the server on {}", port);
         server.start();
     }
 
     public static void startServerSSL() throws Exception {
-        SslContextFactory factory = new SslContextFactory();
-//        factory.setProtocol("TLSv1.2");
-//        factory.setIncludeProtocols("TLSv1.2");
-//        factory.setExcludeProtocols("TLSv1.1","TLSv1.0");
-        factory.setKeyStoreResource(Resource.newClassPathResource("/keystore/keystore.jks"));
-        factory.setKeyStorePassword("changeit");
         if (server != null) {
             server.stop();
         }
         int port = 5550;
-        server = new Server(port);
-        ServerConnector connector = new ServerConnector(server, factory);
+        server = new Server();
+        SslContextFactory.Server factory = new SslContextFactory.Server();
+        Resource keyStoreResource = ResourceFactory.of(server).newClassPathResource("/keystore/keystore.jks");
+        factory.setKeyStoreResource(keyStoreResource);
+        factory.setKeyStorePassword("changeit");
+        // The test cert's CN (appdynamics.com) won't match the "localhost" SNI a real client sends,
+        // so relax Jetty's SNI enforcement for this local test-only server.
+        factory.setSniRequired(false);
+        HttpConfiguration httpConfig = new HttpConfiguration();
+        SecureRequestCustomizer customizer = new SecureRequestCustomizer();
+        customizer.setSniHostCheck(false);
+        httpConfig.addCustomizer(customizer);
+        ServerConnector connector = new ServerConnector(server,
+                new SslConnectionFactory(factory, "http/1.1"),
+                new HttpConnectionFactory(httpConfig));
         connector.setPort(port);
-        server.setConnectors(new Connector[]{connector});
+        server.setConnectors(new org.eclipse.jetty.server.Connector[]{connector});
         server.setHandler(new DelegateHandler());
         logger.info("Starting the server on {}", port);
         server.start();
@@ -97,58 +105,59 @@ public class MockDataPowerServer {
 
 
 
-    private static class DelegateHandler extends AbstractHandler {
+    private static class DelegateHandler extends Handler.Abstract {
 
         private DelegateHandler() {
         }
 
-        public void handle(String target, Request baseRequest, HttpServletRequest request,
-                           HttpServletResponse response) throws IOException, ServletException {
-            String authorization = request.getHeader("Authorization");
+        @Override
+        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+            String target = Request.getPathInContext(request);
+            String authorization = request.getHeaders().get("Authorization");
             if (!Strings.isNullOrEmpty(authorization)) {
                 logger.info("The Auth Header is {}", authorization);
                 String userPass = new String(Base64.decodeBase64(authorization.replace("Basic ", "")));
                 if ("user:welcome".equals(userPass)) {
-                    handle(target, request, response);
+                    handle(target, request, response, callback);
                 } else {
                     logger.info("InCorrect User and Password");
                     response.setStatus(401);
+                    callback.succeeded();
                 }
             } else {
                 response.setStatus(401);
                 logger.info("Auth not present, requesting authentication");
-                response.setHeader("WWW-Authenticate", "Basic realm=\"Mock Test\"");
+                response.getHeaders().put("WWW-Authenticate", "Basic realm=\"Mock Test\"");
+                callback.succeeded();
             }
-            baseRequest.setHandled(true);
-
+            return true;
         }
 
-        private void handle(String target, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        private void handle(String target, Request request, Response response, Callback callback) throws Exception {
             logger.info("Serving a connection {}", target);
-            String inXml = IOUtils.toString(request.getInputStream(), "UTF-8");
+            String inXml = IOUtils.toString(Request.asInputStream(request), "UTF-8");
             Matcher matcher = Pattern.compile("class=\"(\\w+)\"").matcher(inXml);
             if (matcher.find()) {
                 String operation = matcher.group(1);
                 String file;
-                if(operation.equals("DomainStatus")){
+                if (operation.equals("DomainStatus")) {
                     file = "/output/" + operation + ".xml";
-                } else{
+                } else {
                     file = "/output/BulkResponse.xml";
                 }
                 InputStream in = getClass().getResourceAsStream(file);
                 if (in != null) {
-                    ServletOutputStream out = response.getOutputStream();
-                    IOUtils.write(IOUtils.toByteArray(in), out);
+                    byte[] bytes = IOUtils.toByteArray(in);
                     in.close();
-                    out.flush();
-                    out.close();
+                    response.write(true, ByteBuffer.wrap(bytes), callback);
                 } else {
                     logger.error("Cannot find the response file for the operation {}", file);
+                    response.setStatus(500);
+                    callback.succeeded();
                 }
             } else {
                 response.setStatus(404);
-                PrintWriter writer = response.getWriter();
-                writer.close();
+                callback.succeeded();
                 logger.error("Cannot find the operation from the input {}", inXml);
             }
         }

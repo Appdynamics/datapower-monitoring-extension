@@ -31,9 +31,9 @@ numberOfThreads: 5
 connection:
   socketTimeout: 2000
   connectTimeout: 2000
-  sslCertCheckEnabled: false
-  sslVerifyHostname: false
-  sslProtocols: ["TLSv1"]
+  sslCertCheckEnabled: true
+  sslVerifyHostname: true
+  sslProtocols: ["TLSv1.2"]
 
 controllerInfo:
   controllerHost: "controller"

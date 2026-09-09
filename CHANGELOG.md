@@ -32,4 +32,9 @@
 
 ### 2.0.1:
 *  Updated extension commons to 2.2.13.
+
+### 2.0.2:
+*  Fixed an XXE vulnerability in the XML parser used to read DataPower responses.
+*  Changed the sample config.yml to enable TLS certificate/hostname verification and TLSv1.2 by default.
+*  Updated extension commons to 2.2.20 and refreshed build tooling (Maven plugins, mockito, junit).
     

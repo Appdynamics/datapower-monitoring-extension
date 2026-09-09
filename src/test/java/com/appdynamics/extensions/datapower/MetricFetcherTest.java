@@ -36,7 +36,7 @@ public class MetricFetcherTest {
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 return TestHelper.getResponse("DomainStatus");
             }
-        }).when(monitor).getResponse(Mockito.anyString(), Mockito.anyString());
+        }).when(monitor).getResponse(Mockito.anyString(), Mockito.nullable(String.class));
 
 
         //Run 0
