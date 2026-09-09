@@ -35,12 +35,12 @@ public class BulkApiMetricFetcherTest {
     private static final Logger logger = ExtensionsLoggerFactory.getLogger(BulkApiMetricFetcherTest.class);
 
     @Test
-    public void run() {
+    public void run() throws Exception {
         final Map<String, String> expectedMap = getExpectedMap();
         DataPowerMonitor monitor = Mockito.spy(new DataPowerMonitor());
         final SoapMessageUtil soapMessageUtil = new SoapMessageUtil();
         //Read the YAML and metrics.xml
-        Map<String, ?> config = YmlReader.readFromFileAsMap(new File(getClass().getResource("/conf/config.yml").getFile()));
+        Map<String, ?> config = YmlReader.readFromFileAsMap(new File(getClass().getResource("/conf/config.yml").toURI()));
 
         Map server = new HashMap();
         server.put("uri", "http://localhost:5550/service/mgmt/current");
