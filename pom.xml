@@ -11,7 +11,7 @@
 
     <groupId>com.appdynamics.extensions</groupId>
     <artifactId>datapower-monitoring-extension</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.2</version>
     <packaging>jar</packaging>
     <name>datapower-monitoring-extension</name>
     <url>http://maven.apache.org</url>
@@ -65,7 +65,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.2</version>
+                <version>3.2.4</version>
                 <configuration>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <filters>

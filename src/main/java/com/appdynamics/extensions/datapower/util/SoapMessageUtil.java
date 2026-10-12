@@ -11,51 +11,40 @@ import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import org.slf4j.Logger;
 import org.w3c.dom.NodeList;
 
-import javax.xml.namespace.QName;
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.SOAPBody;
-import javax.xml.soap.SOAPElement;
-import javax.xml.soap.SOAPEnvelope;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPMessage;
-import javax.xml.soap.SOAPPart;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created with IntelliJ IDEA.
- * User: abey.tom
- * Date: 4/30/14
- * Time: 3:49 PM
- * To change this template use File | Settings | File Templates.
+ * Builds DataPower XML Management Interface SOAP requests and extracts results from responses.
+ *
+ * The request envelope is built as a plain string. Earlier versions used SAAJ (javax.xml.soap),
+ * but the SAAJ implementation was removed from the JDK in Java 11 (JEP 320), so the constructor
+ * failed on Machine Agents running a modern JRE with:
+ * "Cannot invoke SAAJMetaFactory.newMessageFactory(String) because SAAJMetaFactory.getInstance() is null".
+ * The envelope is static apart from the escaped domain and status-class values, so no SOAP
+ * library is needed. Responses were never parsed with SAAJ and are unchanged.
  */
 public class SoapMessageUtil {
     private static final Logger logger = ExtensionsLoggerFactory.getLogger(SoapMessageUtil.class);
 
-    private final MessageFactory messageFactory;
+    static final String SOAP_ENV_NS = "http://schemas.xmlsoap.org/soap/envelope/";
+    static final String DP_MGMT_NS = "http://www.datapower.com/schemas/management";
+
+    private static final String ENVELOPE_START =
+            "<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"" + SOAP_ENV_NS + "\">"
+                    + "<SOAP-ENV:Header/>"
+                    + "<SOAP-ENV:Body xmlns:dp=\"" + DP_MGMT_NS + "\">";
+    private static final String ENVELOPE_END = "</SOAP-ENV:Body></SOAP-ENV:Envelope>";
 
     public SoapMessageUtil() {
-        try {
-            messageFactory = MessageFactory.newInstance();
-        } catch (SOAPException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public String createSoapMessage(String request, String domain) {
         try {
-            SOAPMessage soapMessage = messageFactory.createMessage();
-            SOAPPart soapPart = soapMessage.getSOAPPart();
-            SOAPEnvelope envelope = soapPart.getEnvelope();
-            SOAPBody soapBody = envelope.getBody();
-            soapBody.addNamespaceDeclaration("dp", "http://www.datapower.com/schemas/management");
-            addRequest(request, domain, soapBody);
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            soapMessage.writeTo(out);
-            return new String(out.toByteArray());
+            return buildEnvelope(Collections.singletonList(request), domain);
         } catch (Exception e) {
             throw new SoapMessageException("Cannot create a SOAP message for the request " + request, e);
         }
@@ -63,29 +52,56 @@ public class SoapMessageUtil {
 
     public String createSoapMessage(Collection<String> operations, String domain) {
         try {
-            SOAPMessage soapMessage = messageFactory.createMessage();
-            SOAPPart soapPart = soapMessage.getSOAPPart();
-            SOAPEnvelope envelope = soapPart.getEnvelope();
-            SOAPBody soapBody = envelope.getBody();
-            soapBody.addNamespaceDeclaration("dp", "http://www.datapower.com/schemas/management");
-            for (String operation : operations) {
-                addRequest(operation, domain, soapBody);
-            }
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            soapMessage.writeTo(out);
-            return new String(out.toByteArray());
+            return buildEnvelope(operations, domain);
         } catch (Exception e) {
             throw new SoapMessageException("Cannot create a SOAP message for the request " + operations, e);
         }
     }
 
-    private void addRequest(String request, String domain, SOAPBody soapBody) throws SOAPException {
-        SOAPElement req = soapBody.addChildElement("request", "dp");
-        if (domain != null) {
-            req.addAttribute(new QName("domain"), domain);
+    private String buildEnvelope(Collection<String> operations, String domain) {
+        StringBuilder sb = new StringBuilder(ENVELOPE_START);
+        for (String operation : operations) {
+            addRequest(operation, domain, sb);
         }
-        SOAPElement status = req.addChildElement("get-status", "dp");
-        status.setAttribute("class", request);
+        return sb.append(ENVELOPE_END).toString();
+    }
+
+    private void addRequest(String request, String domain, StringBuilder sb) {
+        if (request == null) {
+            throw new IllegalArgumentException("The status class (operation) cannot be null");
+        }
+        sb.append("<dp:request");
+        if (domain != null) {
+            sb.append(" domain=\"").append(escapeXmlAttribute(domain)).append('"');
+        }
+        sb.append("><dp:get-status class=\"").append(escapeXmlAttribute(request)).append("\"/></dp:request>");
+    }
+
+    static String escapeXmlAttribute(String value) {
+        StringBuilder out = new StringBuilder(value.length());
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            switch (c) {
+                case '&':
+                    out.append("&amp;");
+                    break;
+                case '<':
+                    out.append("&lt;");
+                    break;
+                case '>':
+                    out.append("&gt;");
+                    break;
+                case '"':
+                    out.append("&quot;");
+                    break;
+                case '\'':
+                    out.append("&apos;");
+                    break;
+                default:
+                    out.append(c);
+            }
+        }
+        return out.toString();
     }
 
     public Xml[] getSoapResponseBody(InputStream inputStream, String operation) {

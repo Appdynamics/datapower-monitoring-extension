@@ -32,4 +32,6 @@
 
 ### 2.0.1:
 *  Updated extension commons to 2.2.13.
-    
+
+### 2.0.2:
+*  Fixed startup failure on Machine Agents running Java 11+ ("Unable to create message factory for SOAP ... SAAJMetaFactory.getInstance() is null"). SOAP requests are now built without SAAJ (javax.xml.soap), which was removed from the JDK in Java 11.
